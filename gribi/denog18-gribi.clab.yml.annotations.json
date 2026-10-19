@@ -1,0 +1,251 @@
+{
+  "freeTextAnnotations": [
+    {
+      "id": "freeText_1792419120198",
+      "text": "172.16.10.0/31",
+      "position": {
+        "x": 424.50960761160826,
+        "y": 336.8117522470267
+      },
+      "fontSize": 9,
+      "fontColor": "#bbbebf",
+      "fontWeight": "normal",
+      "fontStyle": "normal",
+      "textDecoration": "none",
+      "textAlign": "left",
+      "fontFamily": "Arial"
+    },
+    {
+      "id": "freeText_1792419120198-1",
+      "text": ".0",
+      "position": {
+        "x": 385.0469222593456,
+        "y": 337.29251922816456
+      },
+      "fontSize": 8,
+      "fontColor": "#bbbebf",
+      "fontWeight": "normal",
+      "fontStyle": "normal",
+      "textDecoration": "none",
+      "textAlign": "left",
+      "fontFamily": "Arial"
+    },
+    {
+      "id": "freeText_1792419120198-1-1",
+      "text": ".1",
+      "position": {
+        "x": 524.9163735116082,
+        "y": 337.4997705726044
+      },
+      "fontSize": 8,
+      "fontColor": "#bbbebf",
+      "fontWeight": "normal",
+      "fontStyle": "normal",
+      "textDecoration": "none",
+      "textAlign": "left",
+      "fontFamily": "Arial"
+    },
+    {
+      "id": "freeText_1792419120198-2",
+      "text": "192.168.10.0/31",
+      "position": {
+        "x": 341.6921815576172,
+        "y": 234.28299965390258
+      },
+      "fontSize": 9,
+      "fontColor": "#bbbebf",
+      "fontWeight": "normal",
+      "fontStyle": "normal",
+      "textDecoration": "none",
+      "textAlign": "left",
+      "fontFamily": "Arial",
+      "rotation": 301
+    },
+    {
+      "id": "freeText_1792419120198-1-2",
+      "text": ".2",
+      "position": {
+        "x": 356.51905476659323,
+        "y": 276.3214142490541
+      },
+      "fontSize": 8,
+      "fontColor": "#bbbebf",
+      "fontWeight": "normal",
+      "fontStyle": "normal",
+      "textDecoration": "none",
+      "textAlign": "left",
+      "fontFamily": "Arial",
+      "rotation": 298
+    },
+    {
+      "id": "freeText_1792419120198-1-2-1",
+      "text": ".3",
+      "position": {
+        "x": 415.3336254859925,
+        "y": 180.86536597146923
+      },
+      "fontSize": 8,
+      "fontColor": "#bbbebf",
+      "fontWeight": "normal",
+      "fontStyle": "normal",
+      "textDecoration": "none",
+      "textAlign": "left",
+      "fontFamily": "Arial",
+      "rotation": 298
+    },
+    {
+      "id": "freeText_1792419120198-1-2-2",
+      "text": ".2",
+      "position": {
+        "x": 536.8333258168961,
+        "y": 296.9205174700627
+      },
+      "fontSize": 8,
+      "fontColor": "#bbbebf",
+      "fontWeight": "normal",
+      "fontStyle": "normal",
+      "textDecoration": "none",
+      "textAlign": "left",
+      "fontFamily": "Arial",
+      "rotation": 55
+    },
+    {
+      "id": "freeText_1792419120198-1-2-2-1",
+      "text": ".3",
+      "position": {
+        "x": 478.4864709694083,
+        "y": 204.33518038235326
+      },
+      "fontSize": 8,
+      "fontColor": "#bbbebf",
+      "fontWeight": "normal",
+      "fontStyle": "normal",
+      "textDecoration": "none",
+      "textAlign": "left",
+      "fontFamily": "Arial",
+      "rotation": 55
+    },
+    {
+      "id": "freeText_1792419120198-2-1",
+      "text": "192.168.20.0/31",
+      "position": {
+        "x": 509.35851920940524,
+        "y": 231.28345654721318
+      },
+      "fontSize": 9,
+      "fontColor": "#bbbebf",
+      "fontWeight": "normal",
+      "fontStyle": "normal",
+      "textDecoration": "none",
+      "textAlign": "left",
+      "fontFamily": "Arial",
+      "rotation": 58
+    },
+    {
+      "id": "freeText_1792419313771",
+      "text": "Loopback:\n1.1.1.1/32",
+      "position": {
+        "x": 290.8318971081459,
+        "y": 316.0566230679564
+      },
+      "fontSize": 8,
+      "fontColor": "#bbbebf",
+      "fontWeight": "normal",
+      "fontStyle": "normal",
+      "textDecoration": "none",
+      "textAlign": "left",
+      "fontFamily": "Arial"
+    },
+    {
+      "id": "freeText_1792419313771-1",
+      "text": "Loopback:\n2.2.2.2/32",
+      "position": {
+        "x": 581.7312488265479,
+        "y": 317.19193951134895
+      },
+      "fontSize": 8,
+      "fontColor": "#bbbebf",
+      "fontWeight": "normal",
+      "fontStyle": "normal",
+      "textDecoration": "none",
+      "textAlign": "left",
+      "fontFamily": "Arial"
+    },
+    {
+      "id": "freeText_1792419313771-1-1",
+      "text": "Loopback:\n3.3.3.3/32",
+      "position": {
+        "x": 481.83890150041407,
+        "y": 156.89422736254838
+      },
+      "fontSize": 8,
+      "fontColor": "#bbbebf",
+      "fontWeight": "normal",
+      "fontStyle": "normal",
+      "textDecoration": "none",
+      "textAlign": "left",
+      "fontFamily": "Arial"
+    }
+  ],
+  "freeShapeAnnotations": [],
+  "trafficRateAnnotations": [],
+  "groupStyleAnnotations": [],
+  "networkNodeAnnotations": [],
+  "nodeAnnotations": [
+    {
+      "id": "leaf1",
+      "interfacePattern": "e1-{n}",
+      "position": {
+        "x": 340,
+        "y": 320
+      }
+    },
+    {
+      "id": "leaf2",
+      "interfacePattern": "e1-{n}",
+      "position": {
+        "x": 540,
+        "y": 320
+      }
+    },
+    {
+      "id": "spine",
+      "interfacePattern": "e1-{n}",
+      "position": {
+        "x": 440,
+        "y": 160
+      }
+    }
+  ],
+  "edgeAnnotations": [
+    {
+      "id": "Clab-Link1",
+      "source": "leaf2",
+      "target": "spine",
+      "sourceEndpoint": "ethernet-1/2",
+      "targetEndpoint": "ethernet-1/2",
+      "endpointLabelOffsetEnabled": true,
+      "endpointLabelOffset": 40
+    },
+    {
+      "id": "Clab-Link0",
+      "source": "leaf1",
+      "target": "spine",
+      "sourceEndpoint": "ethernet-1/1",
+      "targetEndpoint": "ethernet-1/1",
+      "endpointLabelOffsetEnabled": true,
+      "endpointLabelOffset": 40
+    },
+    {
+      "id": "Clab-Link2",
+      "source": "leaf1",
+      "target": "leaf2",
+      "sourceEndpoint": "ethernet-1/5",
+      "targetEndpoint": "ethernet-1/5",
+      "endpointLabelOffsetEnabled": true,
+      "endpointLabelOffset": 40
+    }
+  ],
+  "aliasEndpointAnnotations": [],
+  "viewerSettings": {}
+}

@@ -338,4 +338,4 @@ INFO[0005] target "leaf1:57401" activate response "activate_ok:{}"
 
 Then verify the current software version using the `os verify` RPC used above.
 
-## Next Section: [gNSI Service](https://github.com/srlinuxamericas/ac5-grpc/tree/main/gnsi)
+## Next Section: [gNSI Service](https://github.com/srlinuxamericas/denog18-grpc/tree/main/gnsi)

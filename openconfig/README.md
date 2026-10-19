@@ -359,4 +359,4 @@ Verify that the streaming session is now showing outputs for each counter increm
 
 Stop the ping and the streaming session using `CTRL+c`.
 
-## Next Section: [gNOI Service](https://github.com/srlinuxamericas/ac5-grpc/tree/main/gnoi)
+## Next Section: [gNOI Service](https://github.com/srlinuxamericas/denog18-grpc/tree/main/gnoi)

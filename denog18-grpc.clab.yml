@@ -1,7 +1,7 @@
-name: ac5-grpc
+name: denog18-grpc
 
 mgmt:
-  network: ac5-grpc-lab-mgmt
+  network: denog18-grpc-lab-mgmt
   ipv4-subnet: 172.20.20.0/24
   ipv6-subnet: 2001:172:20:20::/64
 
@@ -12,7 +12,7 @@ topology:
   kinds:
     nokia_srlinux:
       type: ixr-d2l
-      image: ghcr.io/nokia/srlinux:24.10.1
+      image: ghcr.io/nokia/srlinux:26.7.1
     linux:
       image: ghcr.io/srl-labs/network-multitool
   nodes:
@@ -45,11 +45,11 @@ topology:
         - configs/client3:/config
       exec:
         - ip address add 172.16.10.60/24 dev eth1
-        - ip -6 address add 172:16:10::60/64 dev eth1      
-  ### TELEMETRY STACK ###
+        - ip -6 address add 172:16:10::60/64 dev eth1
+    ### TELEMETRY STACK ###
     gnmic:
       kind: linux
-      image: ghcr.io/openconfig/gnmic:0.30.0
+      image: ghcr.io/openconfig/gnmic:0.49.0
       binds:
         - configs/gnmic-config.yml:/gnmic-config.yml:ro
       cmd: --config /gnmic-config.yml --log subscribe
@@ -72,12 +72,10 @@ topology:
       ports:
         - 3000:3000
       env:
-        GF_INSTALL_PLUGINS: https://algenty.github.io/flowcharting-repository/archives/agenty-flowcharting-panel-1.0.0d.220606199-SNAPSHOT.zip;agenty-flowcharting-panel        
+        GF_INSTALL_PLUGINS: https://algenty.github.io/flowcharting-repository/archives/agenty-flowcharting-panel-1.0.0d.220606199-SNAPSHOT.zip;agenty-flowcharting-panel
   links:
-      # spine-leaf links
-    - endpoints: ["leaf1:e1-1", "spine:e1-1"]
-    - endpoints: ["leaf2:e1-2", "spine:e1-2"]
-    
-      # leaf-client links
-    - endpoints: ["client1:eth1","leaf1:e1-10"]
-    - endpoints: ["client3:eth1","leaf2:e1-10"]
+    # spine-leaf links
+    - endpoints: [ "leaf1:ethernet-1/1", "spine:ethernet-1/1" ]
+    - endpoints: [ "leaf2:ethernet-1/2", "spine:ethernet-1/2" ]
+    - endpoints: [ "client1:eth1", "leaf1:ethernet-1/10" ]
+    - endpoints: [ "client3:eth1", "leaf2:ethernet-1/10" ]

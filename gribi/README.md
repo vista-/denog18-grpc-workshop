@@ -14,7 +14,7 @@ sudo clab des -a
 Change to the `gribi` directory
 
 ```bash
-cd ~/ac5-grpc/gribi
+cd ~/denog18-grpc/gribi
 ```
 
 Deploy gRIBI lab
@@ -25,7 +25,7 @@ sudo clab dep -c
 
 The new lab that will be deployed is similar to the previous lab but without any clients and an additional link between the 2 leafs.
 
-![image](../images/gribi-topo.jpg)
+![image](../images/gribi-topo.svg)
 
 Lab is deployed with all required configuration.
 
@@ -390,7 +390,7 @@ INFO[0000] "leaf1:57401": timestamp: 1747763792059403059
 result: OK 
 ```
 
-If you would like to do another challenge: [z-bonus-challenge](https://github.com/srlinuxamericas/ac5-grpc/tree/main/z-bonus-challenge)
+If you would like to do another challenge: [z-bonus-challenge](/z-bonus-challenge/README.md)
 
 To destroy the lab, run:
 ```bash

@@ -47,7 +47,7 @@ Here's the gNSI Authz policy for reference:
 <br>
 <pre>
 {
-  "name": "ac5-gnmi",
+  "name": "denog18-gnmi",
   "allow_rules": [
     {
       "name": "gnmi-access",
@@ -86,7 +86,7 @@ Here's the gNSI Authz policy for reference:
 Here's the command to push this policy:
 
 ```bash
-gnsic -a leaf1 -u admin -p admin --skip-verify authz rotate --policy "{\"name\":\"ac5-gnmi\",\"allow_rules\":[{\"name\":\"gnmi-access\",\"source\":{\"principals\":[\"grclient1\",\"gnmi-clients\"]},\"request\":{\"paths\":[\"/gnmi.gNMI/Get\",\"/gnmi.gNMI/Subscribe\"]}}],\"deny_rules\":[{\"name\":\"gnmi-access\",\"source\":{\"principals\":[\"grclient1\",\"gnmi-clients\"]},\"request\":{\"paths\":[\"/gnmi.gNMI/Set\"]}}]}"
+gnsic -a leaf1 -u admin -p admin --skip-verify authz rotate --policy "{\"name\":\"denog18-gnmi\",\"allow_rules\":[{\"name\":\"gnmi-access\",\"source\":{\"principals\":[\"grclient1\",\"gnmi-clients\"]},\"request\":{\"paths\":[\"/gnmi.gNMI/Get\",\"/gnmi.gNMI/Subscribe\"]}}],\"deny_rules\":[{\"name\":\"gnmi-access\",\"source\":{\"principals\":[\"grclient1\",\"gnmi-clients\"]},\"request\":{\"paths\":[\"/gnmi.gNMI/Set\"]}}]}"
 ```
 
 Verify the new policy is installed:
