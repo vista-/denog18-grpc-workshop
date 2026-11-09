@@ -43,9 +43,9 @@ round-trip min/avg/max/stddev = 56.421/56.421/56.421/0.000 ms
 
 ## 3.3 gNOI System Traceroute
 
-Traceroute RPC can be used to trace the path to the destination using ICMP messages similar to a standard traceroute but executed remotely from a gNOI client.
+Traceroute RPC can be used to trace the path to the destination using ICMP messages similar to a standard traceroute, but executed remotely from a gNOI client.
 
-Let us trace the path for `leaf2` loopback IP.
+Let's trace the path for `leaf2` loopback IP.
 
 ```bash
 gnoic -a leaf1:57401 -u gnoic1 -p gnoic1 --insecure system traceroute --destination 2.2.2.2 --ns default --wait 1s
@@ -67,15 +67,15 @@ One of the use cases for gNOI File service is to perform configuration backups.
 
 We will be using gNOI File Get RPC to do a remote configuration backup of leaf1.
 
-First let's verify the configuration file exists. We will use the gNOI File Stat RPC for this purpose.
+First, let's verify the configuration file exists. We will use the gNOI File Stat RPC for this purpose.
 
-```
-gnoic -a leaf1:57401 -u client1 -p client1 --insecure file stat --path /etc/opt/srlinux/config.json
+```bash
+gnoic -a leaf1:57401 -u gnoic1 -p gnoic1 --insecure file stat --path /etc/opt/srlinux/config.json
 ```
 
 Expected output:
 
-```
+```bash
 +-------------+------------------------------+---------------------------+------------+------------+--------+
 | Target Name |             Path             |       LastModified        |    Perm    |   Umask    |  Size  |
 +-------------+------------------------------+---------------------------+------------+------------+--------+
@@ -83,15 +83,15 @@ Expected output:
 +-------------+------------------------------+---------------------------+------------+------------+--------+
 ```
 
-The config file is present in the path. Now let's transfer the file our host VM. We will use gNOI File Get RPC.
+The config file is present in the path. Now let's transfer the file to our host VM. We will use gNOI File Get RPC.
 
-```
-gnoic -a leaf1:57401 -u client1 -p client1 --insecure file get --file /etc/opt/srlinux/config.json --dst .
+```bash
+gnoic -a leaf1:57401 -u gnoic1 -p gnoic1 --insecure file get --file /etc/opt/srlinux/config.json --dst .
 ```
 
 Expected output:
 
-```
+```bash
 INFO[0000] "leaf1:57400" received 64000 bytes           
 INFO[0000] "leaf1:57400" received 38052 bytes           
 INFO[0000] "leaf1:57400" file "/etc/opt/srlinux/config.json" saved 
@@ -99,7 +99,7 @@ INFO[0000] "leaf1:57400" file "/etc/opt/srlinux/config.json" saved
 
 Verify that the file is now present locally on your host.
 
-```
+```bash
 ls -lrt etc/opt/srlinux/config.json
 ```
 
@@ -109,7 +109,7 @@ This action can be put inside a cron job and scheduled for daily backups.
 
 gNOI File Put RPC can be used to transfer files to the router.
 
-A configuration backup on a remote server can be transferred to SR Linux device using gNOI File Put RPC.
+A configuration backup on a remote server can be transferred to an SR Linux device using gNOI File Put RPC.
 
 To test this, create a file on the host VM.
 
@@ -120,7 +120,7 @@ echo "config ospf bgp" > my-config.bkp
 Next, let's transfer this file to `leaf1`.
 
 ```bash
-gnoic -a leaf1:57401 -u client1 -p client1 --insecure file put --file my-config.bkp --dst /var/log/srlinux/my-config.bkp
+gnoic -a leaf1:57401 -u gnoic1 -p gnoic1 --insecure file put --file my-config.bkp --dst /var/log/srlinux/my-config.bkp
 ```
 
 Expected output:
@@ -133,7 +133,7 @@ INFO[0000] "leaf1:57401" file "my-config.bkp" written successfully
 Verify using File Stat RPC that the file exists on `leaf1`.
 
 ```bash
-gnoic -a leaf1:57401 -u client1 -p client1 --insecure file stat --path /var/log/srlinux/my-config.bkp
+gnoic -a leaf1:57401 -u gnoic1 -p gnoic1 --insecure file stat --path /var/log/srlinux/my-config.bkp
 ```
 
 Expected output:
@@ -146,11 +146,11 @@ Expected output:
 +-------------+--------------------------------+---------------------------+------------+------------+------+
 ```
 
-Now that the config backup is transferred, regular CLI process can be followed to restore this config. This is outside the scope of this activity.
+Now that the config backup is transferred, the regular CLI process can be followed to restore this config. This is outside the scope of this activity.
 
 ## 3.6 gNOI Healthz
 
-The Healthz RPC can be used to verify the health of the router components like line cards, fan tray etc.
+The Healthz RPC can be used to verify the health of the router components like line cards, fan trays, etc.
 
 Along with checking the health of the components, the RPC also generates a tech support file that can be used to troubleshoot in case the part is not healthy.
 
@@ -158,7 +158,8 @@ Along with checking the health of the components, the RPC also generates a tech 
 gnoic -a leaf1:57401 -u admin -p admin --insecure healthz check --path /platform/fan-tray[id=1]
 ```
 
-Note - wait for a few seconds for the output as the system will be generating a Tech Support file.
+> [!NOTE]
+> Wait for a few seconds for the output as the system will be generating a Tech Support file.
 
 Expected output:
 
@@ -172,15 +173,15 @@ Expected output:
 
 As this is a containerlab node, the health status is Unspecified.
 
-#### EXAMPLE - Optional 3.7 gNOI automation using Ansible
+## 3.7 gNOI Automation Using Ansible (Optional)
 
 Ansible modules can be used to automate gNOI or any other gRPC services.
 
-Let's assume we want to check the reachability of multiple IP's from multiple switches in our sample topology. This can be automated using Ansible.
+Let's assume we want to check the reachability of multiple IPs from multiple switches in our sample topology. This can be automated using Ansible.
 
 For our topology, we want to ping some IPs on `leaf2` from both `leaf1` and `spine`. We will also use a 3rd unknown IP to trigger a failure warning.
 
-Create ansible inventory file on your VM:
+Create Ansible inventory file on your VM:
 
 ```bash
 cat << EOF >> ping-inventory.yml
@@ -198,7 +199,7 @@ all:
         gnoi_port: 57400
         gnoi_user: admin
         gnoi_pass: $EVENT_PASSWORD
-        
+
         # The universal ping list
         ping_targets:
           - { ip: "2.2.2.2", vrf: "default" }
@@ -207,12 +208,10 @@ all:
 EOF
 ```
 
-Next, create the ansible playbook on your VM:
+Next, create the Ansible playbook on your VM:
 
 ```bash
-
 cat << EOF >> ping-playbook.yml
----
 ---
 - name: gNOI Ping
   hosts: nokia_switches
@@ -277,14 +276,17 @@ Expected output:
 
 ```bash
 ```
-*This playbook uses Ansible's ansible.builtin.shell module to call gnoic directly. Ansible's role here is orchestration — looping over hosts and targets, capturing output, and reporting pass/fail — while gnoic performs the actual gNOI RPC call.* 
-## 3.8 Software Upgrade using gNOI
+
+> [!NOTE]
+> This playbook uses Ansible's ansible.builtin.shell module to call gNOIc directly. Ansible's role here is orchestration - looping over hosts and targets, capturing output, and reporting pass/fail - while gNOIc performs the actual gNOI RPC call.
+
+## 3.8 Software Upgrade Using gNOI
 
 This section is theory only as these RPCs cannot be implemented on a node in Containerlab.
 
 The following commands can be used to automate software upgrade using gNOI RPCs.
 
-To verify the current software verion on the device:
+To verify the current software version on the device:
 
 ```bash
 gnoic -a leaf1:57401 -u admin -p admin --insecure os verify
@@ -296,7 +298,7 @@ Expected output:
 +-----------------------+-----------+---------------------+
 |      Target Name      |  Version  | Activation Fail Msg |
 +-----------------------+-----------+---------------------+
-| leaf1:57401 | 23.7.2-84 |                     |
+|      leaf1:57401      | 23.7.2-84 |                     |
 +-----------------------+-----------+---------------------+
 ```
 
@@ -306,7 +308,7 @@ To transfer a software image file to the device:
 gnoic -a leaf1:57401 -u admin -p admin --insecure os install --version srlinux_23.10.1-218 --pkg ../23.10/srlinux-23.10.1-218.bin
 ```
 
-In this commands, `version` refers to the software version of the image being transferred and `pkg` refers to the location of the image file on the host VM.
+In these commands, `version` refers to the software version of the image being transferred and `pkg` refers to the location of the image file on the host VM.
 
 Expected output:
 

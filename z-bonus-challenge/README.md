@@ -1,12 +1,16 @@
 # Bonus Challenges
 
-## Securing gNMI service
+Run these challenges on the gRIBI lab (see the [gRIBI section](../gribi/README.md)).
+
+## Bonus 1 Securing gNMI Service
 
 When setting up streaming telemetry to an external system, by default the system allows gNMI Get, Set and Subscribe from the external system.
 
 Configure a new user `grclient1` on `leaf1` that will be used for streaming telemetry.
 
-**Login to `leaf1` and run the following commands:**
+### Create the Telemetry User
+
+Log in to `leaf1` and run the following commands:
 
 ```bash
 enter candidate private
@@ -16,23 +20,23 @@ set / system configuration role gnmi-clients rule / action write
 commit now
 ```
 
-Configure a gNSI Authz policy to allow gNMI Get, Subscribe  and deny gNMI Set.
+Configure a gNSI Authz policy to allow gNMI Get, Subscribe and deny gNMI Set.
 
 Here are the commands for Get, Set and Subscribe to be run from the VM.
 
-gNMI Get:
+### gNMI Get
 
 ```bash
 gnmic -a leaf1 -u grclient1 -p grclient1 --skip-verify get --path /interface[name=ethernet-1/10]/mtu --encoding json_ietf
 ```
 
-gNMI Set:
+### gNMI Set
 
 ```bash
 gnmic -a leaf1 -u grclient1 -p grclient1 --skip-verify set --update /interface[name=ethernet-1/10]/mtu:::json:::4000
 ```
 
-gNMI Subscribe:
+### gNMI Subscribe
 
 ```bash
 gnmic -a leaf1 -u grclient1 -p grclient1 --skip-verify sub --path /interface[name=ethernet-1/1]/statistics/out-packets --mode once
@@ -53,7 +57,7 @@ Here's the gNSI Authz policy for reference:
       "name": "gnmi-access",
       "source": {
         "principals": [
-          "grclient1","gnmi-clients"
+          "grclient1", "gnmi-clients"
         ]
       },
       "request": {
@@ -69,7 +73,7 @@ Here's the gNSI Authz policy for reference:
       "name": "gnmi-access",
       "source": {
         "principals": [
-          "grclient1","gnmi-clients"
+          "grclient1", "gnmi-clients"
         ]
       },
       "request": {
@@ -95,7 +99,8 @@ Verify the new policy is installed:
 gnmic -a leaf1 -u admin -p admin --skip-verify get --path /system/aaa/authorization/authz-policy --encoding json_ietf
 ```
 
-Note - as gnsic is beta, you may have to run the policy install command multiple times until you see the policy in the verification output above.
+> [!NOTE]
+> As gNSIc is in beta, you may have to run the policy install command multiple times until you see the policy in the verification output above.
 
 After the policy is installed, try gNMI Set:
 
@@ -110,14 +115,14 @@ target "leaf1" set request failed: target "leaf1" SetRequest failed: rpc error: 
 Error: one or more requests failed
 ```
 
-## Default route using gRIBI
+## Bonus 2 Default Route Using gRIBI
 
 Install a default route using gRIBI on `leaf1` with next-hop pointing to the direct interface to `leaf2`.
 
 Get the list of current routes using gNMI Get:
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p admin --insecure get --path "/network-instance[name=default]/route-table/ipv4-unicast" --encoding=JSON_IETF --depth 2 | grep -E "prefix|active|type"
+gnmic -a leaf1:57401 -u admin -p admin --insecure get --path "/network-instance[name=default]/route-table/ipv4-unicast" --encoding json_ietf --depth 2 | grep -E "prefix|active|type"
 ```
 
 Make sure that there is no default route.
@@ -157,16 +162,16 @@ operations:
       nhg: 1
 ```
 
-Copy the payload to a file and use gribic to inject this route.
+Copy the payload to a file named `default-route.yml` and use gRIBIc to inject this route.
 
 ```bash
-gribic -a leaf1:57401 -u admin -p admin --insecure modify --input-file file-name.yml
+gribic -a leaf1:57401 -u admin -p admin --insecure modify --input-file default-route.yml
 ```
 
 Verify using gNMI Get that the default route is installed.
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p admin --insecure get --path "/network-instance[name=default]/route-table/ipv4-unicast" --encoding=JSON_IETF --depth 2 | grep -E "prefix|active|type"
+gnmic -a leaf1:57401 -u admin -p admin --insecure get --path "/network-instance[name=default]/route-table/ipv4-unicast" --encoding json_ietf --depth 2 | grep -E "prefix|active|type"
 ```
 
 Expected output:
@@ -178,6 +183,7 @@ Expected output:
 ```
 
 To destroy the lab, run:
+
 ```bash
 sudo clab des -a
 ```

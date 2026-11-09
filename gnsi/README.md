@@ -1,6 +1,6 @@
 # 4 gNSI Use Cases
 
-gNSI services and RPCs are used for securing access to and security operations on the switch. This includes Authorization policies for gRPC service access, Certificate management and Accounting.
+gNSI services and RPCs are used for securing access to and security operations on the switch. This includes authorization policies for gRPC service access, certificate management and accounting.
 
 In this section, we will learn about some of these features.
 
@@ -10,7 +10,7 @@ The Authz RPC can be used to configure an Authorization policy for access to gRP
 
 In the previous section on gNOI, we used a user `gnoic1` to get the configuration file backup to the host VM. Because there are no authorization policies in place, this user can also transfer files to the switch.
 
-If an authorized 3rd party gets access to the host VM, they can use the same user to push corrupted files or images to the switch.
+If an unauthorized third party gets access to the host VM, they can use the same user to push corrupted files or images to the switch.
 
 We will be using gNSI to configure an authorization policy on leaf1 that will prevent the user called `gnoic1` (used for config file backup) from writing files on the switch.
 
@@ -18,9 +18,9 @@ Let's start by verifying that the user `gnoic1` has access to list, get and put 
 
 We will switch to using secure gRPC communication for this section as gNSI policies apply to secure requests only.
 
-**4.1.1 List file:**
+### 4.1.1 List File
 
-```
+```bash
 gnoic -a leaf1 -u gnoic1 -p gnoic1 --skip-verify file stat --path /etc/opt/srlinux/config.json
 ```
 
@@ -34,9 +34,9 @@ Expected output:
 +-------------+------------------------------+---------------------------+------------+------------+--------+
 ```
 
-**4.1.2 Get file:**
+### 4.1.2 Get File
 
-```
+```bash
 gnoic -a leaf1 -u gnoic1 -p gnoic1 --skip-verify file get --file /etc/opt/srlinux/config.json --dst .
 ```
 
@@ -48,7 +48,7 @@ INFO[0000] "leaf1:57400" received 41988 bytes
 INFO[0000] "leaf1:57400" file "/etc/opt/srlinux/config.json" saved 
 ```
 
-**4.1.3 Put file:**
+### 4.1.3 Put File
 
 Create a file on your host VM:
 
@@ -58,26 +58,26 @@ echo "this is a corrupted image file" > corrupt.img
 
 Now transfer this file to the switch.
 
-```
+```bash
 gnoic -a leaf1 -u gnoic1 -p gnoic1 --skip-verify file put --file corrupt.img --dst /var/log/srlinux/corrupt.img
 ```
 
 Expected output for Put file:
 
-```
+```bash
 INFO[0000] "leaf1:57400" sending file="corrupt.img" hash 
 INFO[0000] "leaf1:57400" file "corrupt.img" written successfully 
 ```
 
-Verify on leaf1 that the file transferred exists.
+Verify on leaf1 that the transferred file exists.
 
-```
+```bash
 gnoic -a leaf1 -u gnoic1 -p gnoic1 --skip-verify file stat --path /var/log/srlinux/corrupt.img
 ```
 
 Expected output:
 
-```
+```bash
 +-------------+------------------------------+---------------------------+------------+------------+------+
 | Target Name |             Path             |       LastModified        |    Perm    |   Umask    | Size |
 +-------------+------------------------------+---------------------------+------------+------------+------+
@@ -85,7 +85,9 @@ Expected output:
 +-------------+------------------------------+---------------------------+------------+------------+------+
 ```
 
-**4.1.4 Delete the transferred file from the device using `File Remove` RPC.**
+### 4.1.4 Remove the Transferred File
+
+Delete the transferred file using the `File Remove` RPC.
 
 ```bash
 gnoic -a leaf1 -u gnoic1 -p gnoic1 --skip-verify file remove --path /var/log/srlinux/corrupt.img
@@ -101,7 +103,7 @@ At this time, the user `gnoic1` has permissions to transfer a file over to leaf1
 
 Let's block that by pushing an authorization policy using gNSI Authz service.
 
-This is the Authz policy payload that we will push. This gives access to gNOI File Get & Stat to user `gnoic1` and will deny gNOI File Put for this user.
+This is the Authz policy payload that we will push. This gives access to gNOI File Get and Stat to the user `gnoic1` and will deny gNOI File Put for this user.
 
 <details>
 <summary>Authz Payload</summary>
@@ -114,9 +116,8 @@ This is the Authz policy payload that we will push. This gives access to gNOI Fi
       "name": "backup-access",
       "source": {
         "principals": [
-          "gnoic1", 
-		  "gnoi-clients"
-		  
+          "gnoic1",
+          "gnoi-clients"
         ]
       },
       "request": {
@@ -132,8 +133,8 @@ This is the Authz policy payload that we will push. This gives access to gNOI Fi
       "name": "backup-access",
       "source": {
         "principals": [
-          "gnoic1", 
-		  "gnoi-clients"
+          "gnoic1",
+          "gnoi-clients"
         ]
       },
       "request": {
@@ -147,15 +148,17 @@ This is the Authz policy payload that we will push. This gives access to gNOI Fi
 </pre>
 </details>
 
-**4.1.5 Let's push the policy using gNSIc.**
+### 4.1.5 Push the Authz Policy
 
-```
+Push the policy using gNSIc.
+
+```bash
 gnsic -a leaf1 -u admin -p admin --skip-verify authz rotate --policy "{\"name\":\"Ext-clients\",\"allow_rules\":[{\"name\":\"backup-access\",\"source\":{\"principals\":[\"gnoic1\",\"gnoi-clients\"]},\"request\":{\"paths\":[\"/gnoi.file.File/Get\",\"/gnoi.file.File/Stat\"]}}],\"deny_rules\":[{\"name\":\"backup-access\",\"source\":{\"principals\":[\"gnoic1\",\"gnoi-clients\"]},\"request\":{\"paths\":[\"/gnoi.file.File/Put\"]}}]}"
 ```
 
 Expected output:
 
-```
+```bash
 INFO[0000] targets: map[leaf1:57400:0xc0002c6040]       
 INFO[0000] "leaf1:57400": got UploadResponse            
 INFO[0001] "leaf1:57400": sending finalize request      
@@ -233,23 +236,24 @@ Expected output:
 ]
 ```
 
-Note - As gNSIc client is in beta phase, it might not push the policy in the first attempt. If gNMI Get is still showing the default policy, repeat the gNSIc Authz command to push the policy again.
+> [!NOTE]
+> As the gNSIc client is in the beta phase, it might not push the policy in the first attempt. If gNMI Get is still showing the default policy, repeat the gNSIc Authz command to push the policy again.
 
 Now, test the list, get, put file operations again.
 
 Refer to the steps in [Section 4.1](#41-gnsi-authz).
 
-Put operation will be denied with the below output.
+Put operation will be denied with the following output.
 
-```
+```bash
 INFO[0000] "leaf1:57400" sending file="corrupt.img" hash 
 ERRO[0000] "leaf1:57400" File Put failed: rpc error: code = PermissionDenied desc = User 'gnoic1' is not authorized to use rpc '/gnoi.file.File/Put' 
 Error: there was 1 error(s)
 ```
 
-Clear the Authz policy:
+### 4.1.6 Clear the Authz Policy
 
-**Login into `leaf1` CLI and executing the following command:**
+Log in to the `leaf1` CLI and run the following command:
 
 ```bash
 tools system aaa authorization authz-policy remove
@@ -263,7 +267,7 @@ gNSI Certz RPCs are used for this purpose.
 
 Assuming our starting point is an insecure connection, we will build a TLS profile with certificates and use it on a gRPC server to make our connection secure.
 
-**4.2.1 Create a new TLS profile on the switch:**
+### 4.2.1 Create a TLS Profile
 
 ```bash
 gnsic -a leaf1:57401 -u admin -p admin --insecure certz add-profile --id Corp-Sec-A
@@ -275,7 +279,7 @@ Expected output:
 INFO[0000] leaf1:57401: added profile "Corp-Sec-A"
 ```
 
-**4.2.2 Verify the TLS profiles on the switch and confirm that the new profile exists on the switch.**
+### 4.2.2 Verify TLS Profiles
 
 ```bash
 gnsic -a leaf1:57401 -u admin -p admin --insecure certz get-profile-list
@@ -294,7 +298,7 @@ Expected output:
 
 Next, check if the switch can generate a Certificate Signing Request (CSR). If the switch can generate one, then we can avoid generating certificates outside the switch and transferring them over to the switch. Our certificate common name (CN) will be `containerlab.dev`.
 
-**4.2.3 CanGenerateCSR**
+### 4.2.3 CanGenerateCSR
 
 ```bash
 gnsic -a leaf1:57401 -u admin -p admin --insecure certz can-gen-csr --cn containerlab.dev
@@ -326,7 +330,7 @@ Next we will request the switch to generate a CSR, get it signed and install it 
 
 We will add the `leaf1` management IP into the SAN field of the certificate.
 
-**4.2.4 Generate CSR**
+### 4.2.4 Generate CSR
 
 ```bash
 gnsic -a leaf1:57401 -u admin -p admin --insecure certz rotate --cn containerlab.dev --ca-cert ca.pem --ca-key ca.key --id Corp-Sec-A --version 2 --san-ip-address "172.20.20.2"
@@ -361,7 +365,7 @@ The above output is shortened to show only the relevant parts. We can see the CS
 
 Verify that the new TLS profile is configured with these signed certificates. We will use gNMI Get RPC for this purpose.
 
-**4.2.5 Verify**
+### 4.2.5 Verify
 
 ```bash
 gnmic -a leaf1 -u admin -p admin --skip-verify get --path /system/tls/server-profile[name=Corp-Sec-A] --encoding json_ietf
@@ -409,11 +413,11 @@ ho3M8EdNOJ1wRaTVfAgktpzKwV38eev7Skg==",
 ]
 ```
 
-The new TLS profile is now ready to be used. Let's update the secure gRPC server `mgmt` TLS profile to the new profle.
+The new TLS profile is now ready to be used. Let's update the secure gRPC server `mgmt` TLS profile to the new profile.
 
 We will use gNMI Set RPC for this purpose.
 
-**4.2.6 gNMI Set**
+### 4.2.6 gNMI Set
 
 ```bash
 gnmic -a leaf1:57401 -u admin -p admin --insecure set --update-path /system/grpc-server[name=mgmt]/tls-profile --update-value Corp-Sec-A
@@ -437,10 +441,10 @@ Expected output:
 
 To verify that the new TLS profile is working, let's get the Management port statistics using gNMI Get RPC and a secure TLS connection. Because the SAN field had the IP address, we will use the `leaf1` IP as the destination.
 
-**4.2.7 gNMI Get**
+### 4.2.7 gNMI Get
 
 ```bash
-gnmic -a 172.20.20.2 -u admin -p admin --tls-ca ca.pem  get --path /interface[name=mgmt0]/statistics --encoding json_ietf
+gnmic -a 172.20.20.2 -u admin -p admin --tls-ca ca.pem get --path /interface[name=mgmt0]/statistics --encoding json_ietf
 ```
 
 ## Next Section: [gRIBI Service](/gribi/README.md)

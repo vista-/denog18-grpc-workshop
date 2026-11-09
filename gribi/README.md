@@ -1,23 +1,29 @@
-# 5 gRIBI Use Case
+# 5 gRIBI Use Cases
 
-gRIBI can be used for route injection in to the FIB/RIB for real time traffic steering.
+gRIBI can be used for route injection into the FIB/RIB for real time traffic steering.
 
 In this workshop, we will demonstrate traffic re-routing with a simple use case.
 
-Save and then destroy existing lab:
+## 5.1 Traffic Re-routing with gRIBI
+
+### 5.1.1 Save and Destroy the Existing Lab
+
+Save the existing lab, then destroy it:
 
 ```bash
 sudo clab save
 sudo clab des -a
 ```
 
-Change to the `gribi` directory
+### 5.1.2 Deploy the gRIBI Lab
+
+Change to the `gribi` directory:
 
 ```bash
-cd ~/denog18-grpc/gribi
+cd ~/denog18-grpc-workshop/gribi
 ```
 
-Deploy gRIBI lab
+Deploy the lab:
 
 ```bash
 sudo clab dep -c
@@ -25,15 +31,16 @@ sudo clab dep -c
 
 The new lab that will be deployed is similar to the previous lab but without any clients and an additional link between the 2 leafs.
 
-![image](../images/gribi-topo.svg)
+![image](../images/denog18-gribi.svg)
 
-Lab is deployed with all required configuration.
+The lab is deployed with all required configuration.
 
-**Wait for a few seconds for BGP sessions to come UP**
+> [!NOTE]
+> Wait a few seconds for BGP sessions to come up.
 
 Check the path taken from `leaf1` to reach `2.2.2.2` on `leaf2`. Perform a traceroute using gNOI System RPC.
 
-**5.1.1 gNOI Traceroute**
+### 5.1.3 gNOI Traceroute
 
 ```bash
 gnoic -a leaf1:57401 -u gnoic1 -p gnoic1 --insecure system traceroute --destination 2.2.2.2 --ns default --wait 1s
@@ -47,11 +54,11 @@ traceroute to 2.2.2.2 (2.2.2.2), 30 max hops, 56 byte packets
 2 2.2.2.2 (2.2.2.2) 347.010499ms
 ```
 
-We can see that the next-hop from `leaf1` to reach `2.2.2.2` is via Spine. This is because the direct link between the 2 leafs is not advertised in any routing protocol.
+We can see that the next-hop from `leaf1` to reach `2.2.2.2` is via `spine`. This is because the direct link between the 2 leafs is not advertised in any routing protocol.
 
 Next, we will inject a route on `leaf1` to redirect traffic going to `2.2.2.2` to use the direct link to `leaf2`.
 
-Here's the payload that we will push.(#a-girbi-payload)
+Here's the payload that we will push:
 
 ```yaml
 default-network-instance: default
@@ -86,10 +93,10 @@ Before we push this route, let's verify the route table entries on `leaf1`.
 
 We will be using gNMI to get this state information.
 
-**5.1.2 gNMI Get**
+### 5.1.4 gNMI Get
 
-```
-gnmic -a leaf1:57401 -u admin -p admin --insecure get --path "/network-instance[name=default]/route-table/ipv4-unicast" --encoding=JSON_IETF --depth 2 | grep -E "prefix|active|type"
+```bash
+gnmic -a leaf1:57401 -u admin -p admin --insecure get --path "/network-instance[name=default]/route-table/ipv4-unicast" --encoding json_ietf --depth 2 | grep -E "prefix|active|type"
 ```
 
 <details>
@@ -121,17 +128,17 @@ gnmic -a leaf1:57401 -u admin -p admin --insecure get --path "/network-instance[
 
 If you would like to see the full output, try running the above command without the grep.
 
-Before we push the route, let's get the current installed gRIBI routes.
+Before we push the route, let's get the currently installed gRIBI routes.
 
-**5.1.3 gRIBI Get**
+### 5.1.5 gRIBI Get
 
-```
+```bash
 gribic -a leaf1:57401 -u admin -p admin --insecure get --ns default --aft ipv4
 ```
 
 Expected output:
 
-```
+```bash
 INFO[0000] target leaf1:57401: final get response:      
 INFO[0000] got 1 results                                
 INFO[0000] "leaf1:57401":   
@@ -139,11 +146,11 @@ INFO[0000] "leaf1:57401":
 
 There are no gRIBI routes at this time.
 
-Now, let's push the gRIBI route. The route payload shown above is saved in a file [grib-input.yml](grib-input.yml)
+Now, let's push the gRIBI route. The route payload shown above is saved in a file [grib-input.yml](grib-input.yml).
 
-**5.1.4 gRIBI Modify**
+### 5.1.6 gRIBI Modify
 
-```
+```bash
 gribic -a leaf1:57401 -u admin -p admin --insecure modify --input-file grib-input.yml
 ```
 
@@ -235,15 +242,15 @@ response: result: {
 
 The operation is successful. Let's get the gRIBI installed route.
 
-**5.1.5 gRIBI Get Destination prefix**
+### 5.1.7 gRIBI Get Destination Prefix
 
-```
+```bash
 gribic -a leaf1:57401 -u admin -p admin --insecure get --ns default --aft ipv4
 ```
 
 Expected output:
 
-```
+```bash
 INFO[0000] target leaf1:57401: final get response: entry:{network_instance:"default" ipv4:{prefix:"2.2.2.2/32" ipv4_entry:{next_hop_group:{value:1}}} rib_status:PROGRAMMED fib_status:PROGRAMMED} 
 INFO[0000] got 1 results                                
 INFO[0000] "leaf1:57401":
@@ -264,15 +271,15 @@ entry: {
 
 Get the gRIBI installed next hop group:
 
-**5.1.6 gRIBI Get NHG**
+### 5.1.8 gRIBI Get NHG
 
-```
+```bash
 gribic -a leaf1:57401 -u admin -p admin --insecure get --ns default --aft nhg
 ```
 
 Expected output:
 
-```
+```bash
 INFO[0000] target leaf1:57401: final get response: entry:{network_instance:"default" next_hop_group:{id:1 next_hop_group:{next_hop:{index:1}}} rib_status:PROGRAMMED fib_status:PROGRAMMED} 
 INFO[0000] got 1 results                                
 INFO[0000] "leaf1:57401":
@@ -293,15 +300,15 @@ entry: {
 
 Get the gRIBI installed next hop:
 
-**5.1.7 gRIBI Get Next Hop**
+### 5.1.9 gRIBI Get Next Hop
 
-```
+```bash
 gribic -a leaf1:57401 -u admin -p admin --insecure get --ns default --aft nh
 ```
 
 Expected output:
 
-```
+```bash
 INFO[0000] target leaf1:57401: final get response: entry:{network_instance:"default" next_hop:{index:1 next_hop:{ip_address:{value:"172.16.10.1"}}} rib_status:PROGRAMMED fib_status:PROGRAMMED} 
 INFO[0000] got 1 results                                
 INFO[0000] "leaf1:57401":
@@ -322,10 +329,10 @@ entry: {
 
 Now let's verify the route table on leaf1 and confirm that there is a route for `2.2.2.2/32` which is the loopback IP on leaf2.
 
-**5.1.8 gNMI Get**
+### 5.1.10 gNMI Get
 
-```
-gnmic -a leaf1:57401 -u admin -p admin --insecure get --path "/network-instance[name=default]/route-table/ipv4-unicast" --encoding=JSON_IETF --depth 2 | grep -E "prefix|active|type"
+```bash
+gnmic -a leaf1:57401 -u admin -p admin --insecure get --path "/network-instance[name=default]/route-table/ipv4-unicast" --encoding json_ietf --depth 2 | grep -E "prefix|active|type"
 ```
 
 <details>
@@ -352,22 +359,22 @@ gnmic -a leaf1:57401 -u admin -p admin --insecure get --path "/network-instance[
 "route-type": "srl_nokia-common:host"
 "active-routes": 6,
 "active-routes-with-ecmp": 0,
-</pre> 
+</pre>
 </details>
 
 We can see that the route for `2.2.2.2` is now owned by gRIBI.
 
 Now it's time to check the path taken from `leaf1` to reach `2.2.2.2`. Repeat the traceroute command performed at the beginning of this activity and compare the next hops between the 2 outputs.
 
-**5.1.9 gNOI Traceroute**
+### 5.1.11 gNOI Traceroute
 
-```
+```bash
 gnoic -a leaf1:57401 -u gnoic1 -p gnoic1 --insecure system traceroute --destination 2.2.2.2 --ns default --wait 1s
 ```
 
 Expected output:
 
-```
+```bash
 traceroute to 2.2.2.2 (2.2.2.2), 30 max hops, 56 byte packets
 1 2.2.2.2 (2.2.2.2) 331.369923ms
 ```
@@ -376,7 +383,7 @@ We can see that `2.2.2.2` is now reachable over the direct link to `leaf2`.
 
 Flush all gRIBI routes:
 
-**5.1.10 gRIBI Flush**
+### 5.1.12 gRIBI Flush
 
 ```bash
 gribic -a leaf1:57401 -u admin -p admin --insecure flush --ns default --override
@@ -390,9 +397,5 @@ INFO[0000] "leaf1:57401": timestamp: 1747763792059403059
 result: OK 
 ```
 
-If you would like to do another challenge: [z-bonus-challenge](/z-bonus-challenge/README.md)
+## Next Section (Optional): [Bonus Challenges](/z-bonus-challenge/README.md)
 
-To destroy the lab, run:
-```bash
-sudo clab des -a
-```

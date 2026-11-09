@@ -1,22 +1,22 @@
-# 2 gNMI with Openconfig models
+# 2 gNMI with OpenConfig Models
 
-Openconfig is a standards based vendor neutral way for configuring and retrieving state from Network Operating Systems (NOS). Openconfig is standardized by [Openconfig.net](https://www.openconfig.net/). Openconfig communication is based on yang models.
+OpenConfig is a standards-based, vendor-neutral way for configuring and retrieving state from Network Operating Systems (NOS). OpenConfig is standardized by [OpenConfig.net](https://www.openconfig.net/). OpenConfig communication is based on YANG models.
 
-Openconfig yang models are published at [GitHub](https://github.com/openconfig/public).
+OpenConfig YANG models are published at [GitHub](https://github.com/openconfig/public).
 
-Nokia SR Linux supports Openconfig.
+Nokia SR Linux supports OpenConfig.
 
-In this section, we will explore openconfig yang configuration and state using CLI and gNMI.
+In this section, we will explore openconfig YANG configuration and state using CLI and gNMI.
 
-## Openconfig in SR Linux
+## 2.1 OpenConfig in SR Linux
 
-Openconfig models can be used via CLI, Netconf, gRPC or JSON-RPC interfaces in SR Linux.
+OpenConfig models can be used via CLI, Netconf, gRPC or JSON-RPC interfaces in SR Linux.
 
 SR Linux openconfig CLI interface is similar to the native interface with all CLI features like commit, rollback, discard, commit confirm also supported in openconfig.
 
-Here's quick reference table to switch between SRL and OC modes in CLI.
+Here's a quick reference table to switch between SRL and OC modes in CLI.
 
-|Model | From Mode | To Mode | Command |
+| Model | From Mode | To Mode | Command |
 |-----|-----------|---------|---------|
 |SRL|running|candidate|enter candidate|
 |SRL|candidate|running|enter running|
@@ -42,25 +42,25 @@ For example:
 A:g15-spine11#
 ```
 
-Openconfig is enabled on all 3 devices. This can be verified using:
+OpenConfig is enabled on all 3 devices. This can be verified using:
 
 ```bash
 info flat from state system management openconfig
 ```
 
-### 2.1 gNMI Get with Openconfig
+## 2.2 gNMI Get with OpenConfig
 
-All interfaces were configured using SR Linux commands when the lab was deployed. With SR Linux Openconfig implementation, it is possible to see this config in Openconfig format.
+All interfaces were configured using SR Linux commands when the lab was deployed. With SR Linux OpenConfig implementation, it is possible to see this config in OpenConfig format.
 
 Let's start with checking this in CLI.
 
-Login to leaf1 and change to OC running mode using:
+Log in to leaf1 and change to OC running mode using:
 
 ```bash
 enter oc
 ```
 
-Then run the below command to see interface ethernet-1/1 configuration in Openconfig format.
+Then run the command below to see interface ethernet-1/1 configuration in OpenConfig format.
 
 ```bash
 info flat interfaces interface ethernet-1/1
@@ -85,7 +85,7 @@ set / interfaces interface ethernet-1/1 subinterfaces subinterface 0 ipv6 config
 Now let's try to get this using gNMI Get RPC.
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p admin --insecure get --path openconfig:/interfaces/interface[name=ethernet-1/1] --encoding json_ietf -t config
+gnmic -a leaf1:57401 -u admin -p admin --insecure get --path openconfig:/interfaces/interface[name=ethernet-1/1] --encoding json_ietf --type config
 ```
 
 Expected output:
@@ -157,7 +157,7 @@ Expected output:
 ]
 ```
 
-Next let's get an Openconfig counter  - out packets for interface `ethernet-1/1`.
+Next, let's get the OpenConfig out-packets counter for interface `ethernet-1/1`.
 
 ```bash
 gnmic -a leaf1:57401 -u admin -p admin --insecure get --path openconfig:/interfaces/interface[name=ethernet-1/1]/state/counters/out-pkts --encoding json_ietf
@@ -183,13 +183,13 @@ Expected output:
 ]
 ```
 
-### 2.2 gNMI Set with Openconfig
+## 2.3 gNMI Set with OpenConfig
 
-All the gNMI Set methods we tried previously with SR Linux models are also valid with Openconfig models.
+All the gNMI Set methods we tried previously with SR Linux models are also valid with OpenConfig models.
 
 Due to time constraints, we will not repeat them here.
 
-When Openconfig is not fully supported for every config element within a context, a mix of vendor specific (also called native) and openconfig models are used to complete the configuration.
+When OpenConfig is not fully supported for every config element within a context, a mix of vendor specific (also called native) and openconfig models are used to complete the configuration.
 
 As part of our fabric deployment, the following should be configured next:
 
@@ -197,13 +197,13 @@ As part of our fabric deployment, the following should be configured next:
 - BGP for overlay between leafs
 - Layer 2 EVPN-VXLAN between clients 1 and 3
 
-Not all objects for these configurations are supported in Openconfig. So we will use Nokia models to cover the gaps.
+Not all objects for these configurations are supported in OpenConfig. So we will use Nokia models to cover the gaps.
 
-We will use the gNMI Get RPC with the `--update-path` and `--update-file` options.
+We will use the gNMI Set RPC with the `--update-path` and `--update-file` options.
 
-Openconfig configuration file for all 3 devices are inside [oc](../configs/oc/).
+OpenConfig configuration files for all 3 devices are in [oc](../configs/oc/).
 
-SR Linux configuration files are inside [srl](../configs/srl/).
+SR Linux configuration files are in [srl](../configs/srl/).
 
 Before we push the configuration, verify that BGP is not configured in default network-instance using gNMI Get.
 
@@ -213,11 +213,10 @@ For example, to check on leaf1:
 gnmic -a leaf1:57401 -u admin -p admin --insecure get --path openconfig:/network-instances/network-instance[name=*] --encoding json_ietf --type config
 ```
 
-
-Now, we are ready to push the configuration using a mix of Openconfig and SR Linux models.
+Now, we are ready to push the configuration using a mix of OpenConfig and SR Linux models.
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p admin --insecure set --update-path openconfig:/ --update-file configs/oc/leaf1-oc.cfg --update-path srl_nokia:/ --update-file configs/srl/leaf1-srl.cfg --encoding=json_ietf
+gnmic -a leaf1:57401 -u admin -p admin --insecure set --update-path openconfig:/ --update-file configs/oc/leaf1-oc.cfg --update-path srl_nokia:/ --update-file configs/srl/leaf1-srl.cfg --encoding json_ietf
 ```
 
 Expected output:
@@ -249,9 +248,9 @@ gnmic -a leaf1:57401 -u admin -p admin --insecure get --path openconfig:/network
 Complete configuration on leaf2 and spine.
 
 ```bash
-gnmic -a leaf2:57401 -u admin -p admin --insecure set --update-path openconfig:/ --update-file configs/oc/leaf2-oc.cfg --update-path srl_nokia:/ --update-file configs/srl/leaf2-srl.cfg --encoding=json_ietf
+gnmic -a leaf2:57401 -u admin -p admin --insecure set --update-path openconfig:/ --update-file configs/oc/leaf2-oc.cfg --update-path srl_nokia:/ --update-file configs/srl/leaf2-srl.cfg --encoding json_ietf
 
-gnmic -a spine:57401 -u admin -p admin --insecure set --update-path openconfig:/ --update-file configs/oc/spine-oc.cfg --update-path srl_nokia:/ --update-file configs/srl/spine-srl.cfg --encoding=json_ietf
+gnmic -a spine:57401 -u admin -p admin --insecure set --update-path openconfig:/ --update-file configs/oc/spine-oc.cfg --update-path srl_nokia:/ --update-file configs/srl/spine-srl.cfg --encoding json_ietf
 ```
 
 With the configuration that we pushed, the BGP neighbor sessions should come UP and start advertising the routes.
@@ -260,9 +259,10 @@ Let's verify this using gNMI Get.
 
 As an example, let's verify the status of BGP neighbor `2.2.2.2` on leaf1 using SR Linux model.
 
-Note: Wait for a minute for BGP to establish the sessions.
+> [!NOTE]
+> Wait for a minute for BGP to establish the sessions.
 
-To reduce the output, we will use the `depth` option supported in gnmic.
+To reduce the output, we will use the `depth` option supported in gNMIc.
 
 ```bash
 gnmic -a leaf1:57401 -u admin -p admin --insecure get --path /network-instance[name=default]/protocols/bgp/neighbor[peer-address=2.2.2.2] --encoding json_ietf --depth 1
@@ -327,25 +327,25 @@ Expected output:
 
 The Layer 2 EVPN should be UP and we should be able to ping from Client 1 to Client 3.
 
-Login to Client 1:
+Log in to Client 1:
 
 ```bash
 sudo docker exec -it client1 bash
 ```
 
-and run a ping to Client 3
+and run a ping to Client 3:
 
 ```bash
 ping -c 3 172.16.10.60
 ```
 
-### 2.3 gNMI Subscribe with Openconfig
+## 2.4 gNMI Subscribe with OpenConfig
 
-gNMI Subscribe for Openconfig Streaming Telemetry works in the same manner as the SR Linux models.
+gNMI Subscribe for OpenConfig Streaming Telemetry works in the same manner as the SR Linux models.
 
-We will try the ON-CHANGE option in this section with Openconfig models.
+We will try the ON-CHANGE option in this section with OpenConfig models.
 
-Let us stream the out packets counter on `leaf1` using on-change option.
+Let's stream the out packets counter on `leaf1` using on-change option.
 
 ```bash
 gnmic -a leaf1:57401 -u admin -p admin --insecure sub --path openconfig:/interfaces/interface[name=ethernet-1/1]/state/counters/out-pkts --mode stream --stream-mode on-change

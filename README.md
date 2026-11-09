@@ -1,16 +1,16 @@
 # Mastering gRPC-Based Services for Network Automation
 
-## Section 0: Administrative matters
+## 0 Administrative Matters
 
-Welcome to the workshop on *Mastering gRPC-based services for network auotmation* at DENOG 18!
+Welcome to the workshop on *Mastering gRPC-based services for network automation* at DENOG 18!
 
-This README is your starting point into the hands on section of this workshop.
+This README is your starting point into the hands-on section of this workshop.
 
 You will need a laptop with an SSH client and/or a web browser to fully participate in this workshop.
 
 If you need help, please raise your hand and a Nokia team member will be happy to assist. :)
 
-### Lab Environment
+### 0.1 Lab Environment
 
 A Nokia team member will provide you a note with your workshop instance ID, and we will also show you the login credentials to your workshop VMs.
 
@@ -25,11 +25,11 @@ The password for the hosted Visual Studio Code instance is the same as the login
 
 If you would like to run the lab on your own system or VM, either during the workshop or on your own time, please make sure you have the following available on a recent Linux system:
 
-- An installation of Docker and Containerlab (a quick start guide can be found [here](https://containerlab.dev/quickstart/)), and ability to deploy Docker containers/Containerlab topologies
+- An installation of Docker and Containerlab (a quick start guide can be found [here](https://containerlab.dev/quickstart/)), and the ability to deploy Docker containers/Containerlab topologies
 - Ability to pull OCI (Docker) images from ghcr.io
 - Installations of `gnmic`, `gnoic`, `gnsic` and `gribic`. See the [section below](#grpc-clients) on how to install these gRPC clients
 
-This workshop lab can also be deployed using GitHub Codespaces, as an alternate solution to running it on your own VM. Once you are logged into GitHub, click the below icon and wait for 2 minutes for codespaces to be ready. During this initialization, Codespaces will install Containerlab and gRPC clients so that you are all set to run the use cases immediately.
+This workshop lab can also be deployed using GitHub Codespaces, as an alternate solution to running it on your own VM. Once you are logged into GitHub, click the icon below and wait for 2 minutes for codespaces to be ready. During this initialization, Codespaces will install Containerlab and gRPC clients so that you are all set to run the use cases immediately.
 
 <div align=center>
 <a href="https://codespaces.new/vista-/denog18-grpc-workshop?quickstart=1">
@@ -43,7 +43,8 @@ This workshop lab can also be deployed using GitHub Codespaces, as an alternate 
 ---
 
 ## Workshop
-The objective of the hands on section of this workshop is the following:
+
+The objective of the hands-on section of this workshop is the following:
 
 - Configuring, retrieving state, streaming telemetry using gNMI
 - File backup, restore and software upgrade prep using gNOI
@@ -51,11 +52,12 @@ The objective of the hands on section of this workshop is the following:
 - Traffic steering using gRIBI
 
 ## Lab Topology
+
 Each workshop participant will be working with their own switch topology consisting of 2 leaf and 1 spine switches along with 2 clients. The leaf-spine architecture is typical in a data center environment and clients are simulating workloads or VMs.
 
 ![image](images/denog18-grpc.svg)
 
-## NOS (Network Operating System)
+## Network Operating System (NOS)
 
 Both leafs and spine nodes in the workshop topology are running release 26.7.1 of Nokia [SR Linux](https://www.nokia.com/networks/ip-networks/service-router-linux-NOS/).  
 The workshop focuses on the standards-based gRPC services, so in theory, you might be able to use other network OSes if you later wish to reproduce this workshop with a different network stack.
@@ -66,11 +68,11 @@ The switches and clients are both pre-configured to allow for basic connectivity
 
 See the [topology file](denog18-grpc.clab.yml) for more details.
 
-## Section 1: Getting the workshop ready! 
+## 1 Getting the Workshop Ready
 
-## Task 0: Deploying the lab
+### 1.1 Deploying the Lab
 
-Login to the VM using the credentials on your sheet.
+Log in to the VM using the credentials on your sheet.
 
 Containerlab is already pre-installed on your VM, but if you are following along at home or on your own Linux system, run the following command to install Containerlab and its dependencies (including Docker):
 
@@ -79,30 +81,29 @@ curl -sL https://containerlab.dev/setup | sudo -E bash -s "all"
 ```
 
 > [!TIP]
-> If you would like to use Containerlab without sudo, like the output of the installer suggests, you should add your user to this group using the following command:  
-> 
+> If you would like to use Containerlab without sudo, as the output of the installer suggests, you should add your user to this group using the following command:  
+>
 > `gpasswd -a <your username here> clab_admins`
-> 
-> and apply the new group membership to your terminal session using the command
-> `newgrp clab_admins` (or log in and out from the SSH session)
+>
+> and apply the new group membership to your terminal session using the command `newgrp clab_admins` (or log in and out from the SSH session)
 >
 > **This has already been set up for you on the provided workshop VM!**
 
 Clone the Git repo to your VM:
 
-```
+```bash
 git clone https://github.com/vista-/denog18-grpc-workshop
 ```
 
 Verify that the Git repo files are now available on your VM.
 
-```
+```bash
 ls -lrt denog18-grpc-workshop/
 ```
 
 To deploy the lab, run the following:
 
-```
+```bash
 cd denog18-grpc-workshop
 sudo clab deploy -t denog18-grpc.clab.yml
 ```
@@ -110,7 +111,7 @@ sudo clab deploy -t denog18-grpc.clab.yml
 [Containerlab](https://containerlab.dev/) will deploy the lab and display a table with the list of nodes and their IPs.  
 Below is an example output of a successful deploy.
 
-```
+```bash
 ╭────────────┬────────────────────────────────────┬─────────┬────────────────────╮
 │    Name    │             Kind/Image             │  State  │   IPv4/6 Address   │
 ├────────────┼────────────────────────────────────┼─────────┼────────────────────┤
@@ -142,48 +143,56 @@ Below is an example output of a successful deploy.
 
 To display all deployed labs on your VM at any time, use:
 
-```
+```bash
 sudo clab inspect --all
 ```
 
-## Task 1: Connecting to the devices
+### 1.2 Connecting to the Devices
 
 Find the nodename or IP address of the device from the above output and then use SSH.
 
 Username: `admin`
 
-Password: `admin` (the default password for SR Linux deployed in Containerlab is `NokiaSrl1!`, but we changed it as part of the custom startup-config)
+Password: `admin` (the default password for SR Linux deployed in Containerlab is `NokiaSrl1!`, but this is changed as part of the custom startup-config)
 
+<<<<<<< HEAD
 ```
+=======
+> [!NOTE]
+> Make sure to save your work that you do on the workshop VM!
+> We will be tearing them down right after the workshop ends.
+
+```bash
+>>>>>>> 9c1b39d (Consistency)
 ssh leaf1
 ```
 
-To login to the client, identify the client hostname using the `sudo clab inspect --all` command above and then:
+To log in to the client, identify the client hostname using the `sudo clab inspect --all` command above and then:
 
 ```bash
 sudo docker exec -it client3 bash
 ```
 
-### Topology Link Addressing
+#### 1.2.1 Topology Link Addressing
 
 ![image](images/denog18-grpc-addressing.svg)
 
 To derive IPv6 addresses, replace the dots with colons, with the last dot being replaced by two colons. The /31 point-to-points are /127s in the IPv6 addressing plan, while the client subnet is a /64 instead of a /24.
 
-### Task 2: Verify reachability between devices
+### 1.3 Verifying Reachability Between Devices
 
 After the lab is deployed, check reachability between leaf and spine devices using ping.  
-In SR Linux, the ping command runs in the management network-instance if otherwise not specified, so the network-instance argument should be set as `default`.
+In SR Linux, the ping command runs in the management network-instance unless otherwise specified, so the network-instance argument should be set as `default`.
 
 Example on `spine` to `leaf1` for IPv4:
 
-```
+```bash
 ping -c 3 192.168.10.2 network-instance default
 ```
 
 Example on `spine` to `leaf1` for IPv6:
 
-```
+```bash
 ping6 -c 3 192:168:10::2 network-instance default
 ```
 
@@ -200,22 +209,22 @@ All 4 clients are installed by default on the VM provided to you.
 
 Verify that clients are installed on your VM:
 
-```
+```bash
 gnmic version
 gnoic version
 gnsic version
 gribic version
 ```
 
-If for any reason, one of the above clients needs to be re-installed or updated, refer to the client pages referenced above.
+If, for any reason, one of the above clients needs to be re-installed or updated, refer to the client pages referenced above.
 
-For gNSI client build instructions, refer to the [gnsi-build.sh](gnsi-build.sh) script in this repo.
+For gNSIc client build instructions, refer to the [gnsi-build.sh](gnsi-build.sh) script in this repo.
 
 All `gnmic`, `gnoic`, `gnsic` and `gribic` commands should be executed from the VM, not from the containerized clients!
 
 ![image](images/lab-setup.jpg)
 
-## Task 3: Enabling gRPC services
+### 1.4 Enabling gRPC Services
 
 Before we get on with the use cases, let's verify the gRPC server configuration on the SR Linux nodes and confirm whether all required gRPC services are enabled.
 
@@ -230,8 +239,8 @@ info system grpc-server insecure-mgmt
 
 Expected output for secure gRPC server:
 
-```
-admin-state enable
+```bash
+    admin-state enable
     rate-limit 65000
     tls-profile clab-profile
     network-instance mgmt
@@ -254,7 +263,7 @@ admin-state enable
 
 Expected output for insecure gRPC server:
 
-```
+```bash
     admin-state enable
     rate-limit 65000
     network-instance mgmt
@@ -285,16 +294,19 @@ The secure gRPC server is listening on the default gRPC port (57400) while the i
 ## Next Section: [gNMI Service](/gnmi/README.md)
 
 --------------------------
-## Useful links
 
-* [containerlab](https://containerlab.dev/)
-* [gNMIc](https://gnmic.openconfig.net/)
-* [gNOIc](https://gnoic.kmrd.dev/)
-* [gRIBIc](https://gribic.kmrd.dev//)
+## Useful Links
+
+- [containerlab](https://containerlab.dev/)
+- [gNMIc](https://gnmic.openconfig.net/)
+- [gNOIc](https://gnoic.kmrd.dev/)
+- [gNSIc](https://github.com/karimra/gnsic)
+- [gRIBIc](https://gribic.kmrd.dev/)
 
 ### SR Linux
-* [SR Linux documentation](https://documentation.nokia.com/srlinux/)
-* [Learn SR Linux](https://learn.srlinux.dev/)
-* [YANG Browser](https://yangbrowser.nokia.com/srlinux)
-* [gNxI Browser](https://gnxi.srlinux.dev/)
-* [gNxI Protomaps](https://protomap.netdevops.me/)
+
+- [SR Linux documentation](https://documentation.nokia.com/srlinux/)
+- [Learn SR Linux](https://learn.srlinux.dev/)
+- [YANG Browser](https://yangbrowser.nokia.com/srlinux)
+- [gNxI Browser](https://gnxi.srlinux.dev/)
+- [gNxI Protomaps](https://protomap.netdevops.me/)
