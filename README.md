@@ -152,7 +152,7 @@ Find the nodename or IP address of the device from the above output and then use
 
 Username: `admin`
 
-Password: `NokiaSrl1!` (the default password for SR Linux deployed in Containerlab)
+Password: `admin` (the default password for SR Linux deployed in Containerlab is `NokiaSrl1!`, but we changed it as part of the custom startup-config)
 
 ```
 ssh leaf1

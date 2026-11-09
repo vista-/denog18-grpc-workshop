@@ -609,4 +609,8 @@ Stop the ping using `CTRL+c` and check the streaming output again. The stream ha
 
 Stop the streaming session using `CTRL+c`.
 
+<<<<<<< HEAD
 ## Next Section:   [Openconfig](/openconfig/README.md)
+=======
+## Next Section:   [Openconfig](/openconfig/README.md)
+>>>>>>> 71f97f1 (Minor fixes all over)

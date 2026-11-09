@@ -1,12 +1,12 @@
 # 4 gNSI Use Cases
 
-gNSI services and RPCs are used for securing the switch. This includes Authorization policies for gRPC service access, Certificate management and Accounting.
+gNSI services and RPCs are used for securing access to and security operations on the switch. This includes Authorization policies for gRPC service access, Certificate management and Accounting.
 
-In this section, we will learn about some of them.
+In this section, we will learn about some of these features.
 
 ## 4.1 gNSI Authz
 
-Authz RPC can be used to configure an Authorization policy for access to gRPC services.
+The Authz RPC can be used to configure an Authorization policy for access to gRPC services.
 
 In the previous section on gNOI, we used a user `gnoic1` to get the configuration file backup to the host VM. Because there are no authorization policies in place, this user can also transfer files to the switch.
 
@@ -443,4 +443,4 @@ To verify that the new TLS profile is working, let's get the Management port sta
 gnmic -a 172.20.20.2 -u admin -p admin --tls-ca ca.pem  get --path /interface[name=mgmt0]/statistics --encoding json_ietf
 ```
 
-## Next Section: [gRIBI Service](https://github.com/srlinuxamericas/denog18-grpc/tree/main/gribi)
+## Next Section: [gRIBI Service](/gribi/README.md)
