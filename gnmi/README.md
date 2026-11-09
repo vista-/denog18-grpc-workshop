@@ -330,8 +330,8 @@ Expected output:
 [
   {
     "source": "leaf1:57401",
-    "timestamp": 1747463861177086072,
-    "time": "2025-05-17T02:37:41.177086072-04:00",
+    "timestamp": 1794233521841573207,
+    "time": "2026-11-09T15:12:01.841573207+01:00",
     "updates": [
       {
         "Path": "srl_nokia-system:system/srl_nokia-system-snmp:snmp",
@@ -342,10 +342,10 @@ Expected output:
                 "community-entry": [
                   {
                     "community": "$aes1$AWAdu4eU6gBcGG8=$5e7xP9EPZNMu4yweZDHwXA==",
-                    "name": "ac3"
+                    "name": "denog"
                   }
                 ],
-                "name": "ac3-snmpv2-community",
+                "name": "denog-snmpv2-community",
                 "security-level": "no-auth-no-priv"
               }
             ],
