@@ -19,7 +19,7 @@ Each participant will be provided their own Linux VM to work on during this work
 The workshop VMs will be accessible through SSH, running on non-standard port 2222, and via a hosted Visual Studio Code instance, on port 8443, available through a web browser.  
 The password for the hosted Visual Studio Code instance is the same as the login password.
 
-> [!DANGER]
+> [!CAUTION]
 > Make sure to save your work that you do on the workshop VM!
 > We will be tearing them down right after the workshop ends.
 
@@ -153,10 +153,6 @@ Find the nodename or IP address of the device from the above output and then use
 Username: `admin`
 
 Password: `NokiaSrl1!` (the default password for SR Linux deployed in Containerlab)
-
-> [!NOTE]
-> Make sure to save your work that you do on the workshop VM!
-> We will be tearing them down right after the workshop ends.
 
 ```
 ssh leaf1

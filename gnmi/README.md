@@ -7,7 +7,7 @@ We will start by verifying gNMI capabilities on the SR Linux device using the gN
 This is also a test to confirm whether gNMI is enabled on the device.
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p admin --insecure cap
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure cap
 ```
 
 Expected output:
@@ -60,7 +60,7 @@ Expected output:
 Now that we have the path, let's get the configuration of this interface using gNMI.
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p admin --insecure --encoding json_ietf get --path /interface[name=ethernet-1/1] --type config
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure --encoding json_ietf get --path /interface[name=ethernet-1/1] --type config
 ```
 
 Expected output:
@@ -114,7 +114,7 @@ Next let's get only the operational state of the client facing interface using g
 To get the state gNMI Xpath, search for the leafs under interface context in the SR Linux yang explorer.
 
 ```
-gnmic -a leaf1:57401 -u admin -p admin --insecure get --path /interface[name=ethernet-1/10]/oper-state --encoding json_ietf
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --path /interface[name=ethernet-1/10]/oper-state --encoding json_ietf
 ```
 
 Expected output:
@@ -152,13 +152,13 @@ We will start by configuring the interface MTU on the client facing `ethernet-1/
 Before we set the MTU, verify the current MTU from the state datastore using gNMI.
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p admin --insecure get --path /interface[name=ethernet-1/10]/mtu --encoding json_ietf
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --path /interface[name=ethernet-1/10]/mtu --encoding json_ietf
 ```
 
 The current MTU value should be 9232. Let's change this to 4000.
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p admin --insecure set --update /interface[name=ethernet-1/10]/mtu:::json:::4000
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure set --update /interface[name=ethernet-1/10]/mtu:::json:::4000
 ```
 
 Expected output:
@@ -186,7 +186,7 @@ Another way to specify a path and value is using `--update-path` and `--update-v
 Modify the MTU of `ethernet-1/10` on leaf1 to 3600 using these keywords.
 
 ```bash
-gnmic -a leaf1 -u admin -p admin --skip-verify set --update-path /interface[name=ethernet-1/10]/mtu --update-value 3600 --encoding json_ietf
+gnmic -a leaf1 -u admin -p NokiaSrl1! --skip-verify set --update-path /interface[name=ethernet-1/10]/mtu --update-value 3600 --encoding json_ietf
 ```
 
 Verify the current MTU using the Get request shown above.
@@ -215,9 +215,9 @@ info interface ethernet-1/1 | as json
 Let's push the system interface configuration on all 3 devices. ( make sure you are in denog18-grpc directory) 
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p admin --insecure set --update-path /interface[name=system0] --update-file gnmi/leaf1-system.cfg --encoding json_ietf
-gnmic -a leaf2:57401 -u admin -p admin --insecure set --update-path /interface[name=system0] --update-file gnmi/leaf2-system.cfg --encoding json_ietf
-gnmic -a spine:57401 -u admin -p admin --insecure set --update-path /interface[name=system0] --update-file gnmi/spine-system.cfg --encoding json_ietf
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure set --update-path /interface[name=system0] --update-file gnmi/leaf1-system.cfg --encoding json_ietf
+gnmic -a leaf2:57401 -u admin -p NokiaSrl1! --insecure set --update-path /interface[name=system0] --update-file gnmi/leaf2-system.cfg --encoding json_ietf
+gnmic -a spine:57401 -u admin -p NokiaSrl1! --insecure set --update-path /interface[name=system0] --update-file gnmi/spine-system.cfg --encoding json_ietf
 ```
 
 Expected output for leaf1:
@@ -239,7 +239,7 @@ Expected output for leaf1:
 Verify the `system0` interface configuration using the Get RPC used earlier.
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p admin --insecure --encoding json_ietf get --path /interface[name=system0] --type config
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure --encoding json_ietf get --path /interface[name=system0] --type config
 ```
 
 ### 1.3.4 Replace File
@@ -253,7 +253,7 @@ To try this, we will replace the SNMP section with a new config that has a diffe
 Verify the current SNMP configuration on leaf1:
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p admin --insecure get --path /system/snmp --encoding json_ietf -t config
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --path /system/snmp --encoding json_ietf -t config
 ```
 
 Expected output:
@@ -298,7 +298,7 @@ Expected output:
 We will replace this section with the configuration in [leaf1-snmp.cfg](leaf1-snmp.cfg) that replaces the above community with a new community string.
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p admin --insecure set --replace-path /system/snmp --replace-file gnmi/leaf1-snmp.cfg --encoding json_ietf
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure set --replace-path /system/snmp --replace-file gnmi/leaf1-snmp.cfg --encoding json_ietf
 ```
 
 Expected output:
@@ -321,7 +321,7 @@ Expected output:
 Now verify the SNMP config using the Get method.
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p admin --insecure get --path /system/snmp --encoding json_ietf -t config
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --path /system/snmp --encoding json_ietf -t config
 ```
 
 Expected output:
@@ -374,7 +374,7 @@ Let's add a SNMP community but this time pushed using raw CLI.
 The SNMP community configuration in CLI format is in [leaf1-cli.cfg](leaf1-cli.cfg).
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p admin --insecure set --update-cli-file gnmi/leaf1-cli.cfg
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure set --update-cli-file gnmi/leaf1-cli.cfg
 ```
 
 Expected output:
@@ -396,7 +396,7 @@ Expected output:
 Verify the updated SNMP communities using Get RPC.
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p admin --insecure get --path /system/snmp --encoding json_ietf -t config
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --path /system/snmp --encoding json_ietf -t config
 ```
 
 ### 1.3.6 Commit confirm
@@ -410,13 +410,13 @@ To try this, we will change the MTU value of `ethernet-1/10` on leaf1 from curre
 Verify the current value using Get method:
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p admin --insecure get --path /interface[name=ethernet-1/10]/mtu --encoding json_ietf
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --path /interface[name=ethernet-1/10]/mtu --encoding json_ietf
 ```
 
 Update the value to 8000 along with enabling commit confirm with a rollback duration of 5 minutes.
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p admin --insecure set --update /interface[name=ethernet-1/10]/mtu:::json:::8000 --commit-id mtu-8000 --commit-request --rollback-duration 5m
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure set --update /interface[name=ethernet-1/10]/mtu:::json:::8000 --commit-id mtu-8000 --commit-request --rollback-duration 5m
 ```
 
 Expected output:
@@ -438,14 +438,14 @@ Expected output:
 Verify the new MTU value:
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p admin --insecure get --path /interface[name=ethernet-1/10]/mtu --encoding json_ietf
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --path /interface[name=ethernet-1/10]/mtu --encoding json_ietf
 ```
 
 We can see that the MTU value is now updated to 8000.
 
 When there is a commit confirm in progress, the system will not allow any new configuration changes via any management interface (CLI, Netconf, gRPC, JSON-RPC) until the active commit confirm is confirmed, cancelled or the rollback timer expires.
 
-The status bar at the bottom shows that a commit confirm is in progress and also shows the time remaining to accept or cancel the commit confirm.
+The status bar at the bottom of an active CLI session shows that a commit confirm is in progress and also shows the time remaining to accept or cancel the commit confirm.
 
 ```bash
 [commit confirmed (rollback in a minute)] Current mode: + running
@@ -467,24 +467,27 @@ Wait for 5 minutes and then verify the MTU again.
 
 Since we did not accept the commit confirm, the system will do an automatic rollback when the rollback timer expires.
 
+> [!NOTE]
+> If you don't want to wait, you can also **commit-cancel** the non-confirmed commit.  
+
 We can see from the latest Get result that the MTU is back at the original value of 3600.
 
 Let's do another MTU update to 7500 and this time we will accept the commit confirm.
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p admin --insecure set --update /interface[name=ethernet-1/10]/mtu:::json:::7500 --commit-id mtu-7500 --commit-request --rollback-duration 5m
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure set --update /interface[name=ethernet-1/10]/mtu:::json:::7500 --commit-id mtu-7500 --commit-request --rollback-duration 5m
 ```
 
 Verify the new MTU value using Get:
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p admin --insecure get --path /interface[name=ethernet-1/10]/mtu --encoding json_ietf
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --path /interface[name=ethernet-1/10]/mtu --encoding json_ietf
 ```
 
 Confirm the commit before the rollback timer expires.
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p admin --insecure set --commit-id mtu-7500 --commit-confirm
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure set --commit-id mtu-7500 --commit-confirm
 ```
 
 Expected output:
@@ -505,7 +508,7 @@ Our last option with the Set method is to delete a configuration element.
 Let us delete the MTU from `ethernet-1/10` on leaf1 so it will revert back to the default MTU value.
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p admin --insecure set --delete /interface[name=ethernet-1/10]/mtu
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure set --delete /interface[name=ethernet-1/10]/mtu
 ```
 
 Expected output:
@@ -527,7 +530,7 @@ Expected output:
 Verify the current MTU value after the delete operation. It should now be set to the default MTU which is 9232.
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p admin --insecure get --path /interface[name=ethernet-1/10]/mtu --encoding json_ietf
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --path /interface[name=ethernet-1/10]/mtu --encoding json_ietf
 ```
 
 ## 1.4 gNMI Subscribe
@@ -543,7 +546,7 @@ Just like SNMP polling, it is possible to poll a specific object using gNMI with
 Let us get the out packets of interface `ethernet-1/1` on leaf1 using this method.
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p admin --insecure sub --path /interface[name=ethernet-1/1]/statistics/out-packets --mode once
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure sub --path /interface[name=ethernet-1/1]/statistics/out-packets --mode once
 ```
 
 Expected output:
@@ -572,7 +575,7 @@ If we need a continous stream of this stat, we will use the `SAMPLE` option alon
 The following command streams the out packets value every 15 seconds.
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p admin --insecure sub --path /interface[name=ethernet-1/1]/statistics/out-packets --mode stream --stream-mode sample --sample-interval 15s
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure sub --path /interface[name=ethernet-1/1]/statistics/out-packets --mode stream --stream-mode sample --sample-interval 15s
 ```
 
 The streaming session can be stopped using `CTRL+c`.
@@ -589,7 +592,7 @@ When this option is enabled, the system will only stream data when the value of 
 Let us stream the same out packets counter using this method.
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p admin --insecure sub --path /interface[name=ethernet-1/1]/statistics/out-packets --mode stream --stream-mode on-change
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure sub --path /interface[name=ethernet-1/1]/statistics/out-packets --mode stream --stream-mode on-change
 ```
 
 You will notice that the system is not streaming this counter as there is no change in the counter value.
@@ -606,4 +609,4 @@ Stop the ping using `CTRL+c` and check the streaming output again. The stream ha
 
 Stop the streaming session using `CTRL+c`.
 
-## Next Section:   [Openconfig](https://github.com/srlinuxamericas/denog18-grpc/tree/main/openconfig)
+## Next Section:   [Openconfig](/openconfig/README.md)
