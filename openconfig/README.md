@@ -85,7 +85,7 @@ set / interfaces interface ethernet-1/1 subinterfaces subinterface 0 ipv6 config
 Now let's try to get this using gNMI Get RPC.
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p admin --insecure get --path openconfig:/interfaces/interface[name=ethernet-1/1] --encoding json_ietf --type config
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --path openconfig:/interfaces/interface[name=ethernet-1/1] --encoding json_ietf --type config
 ```
 
 Expected output:
@@ -160,7 +160,7 @@ Expected output:
 Next, let's get the OpenConfig out-packets counter for interface `ethernet-1/1`.
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p admin --insecure get --path openconfig:/interfaces/interface[name=ethernet-1/1]/state/counters/out-pkts --encoding json_ietf
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --path openconfig:/interfaces/interface[name=ethernet-1/1]/state/counters/out-pkts --encoding json_ietf
 ```
 
 Expected output:
@@ -210,13 +210,13 @@ Before we push the configuration, verify that BGP is not configured in default n
 For example, to check on leaf1:
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p admin --insecure get --path openconfig:/network-instances/network-instance[name=*] --encoding json_ietf --type config
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --path openconfig:/network-instances/network-instance[name=*] --encoding json_ietf --type config
 ```
 
 Now, we are ready to push the configuration using a mix of OpenConfig and SR Linux models.
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p admin --insecure set --update-path openconfig:/ --update-file configs/oc/leaf1-oc.cfg --update-path srl_nokia:/ --update-file configs/srl/leaf1-srl.cfg --encoding json_ietf
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure set --update-path openconfig:/ --update-file configs/oc/leaf1-oc.cfg --update-path srl_nokia:/ --update-file configs/srl/leaf1-srl.cfg --encoding json_ietf
 ```
 
 Expected output:
@@ -242,15 +242,15 @@ Expected output:
 Run the Get RPC used above to verify that BGP and MAC-VRF are now configured.
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p admin --insecure get --path openconfig:/network-instances/network-instance[name=*] --encoding json_ietf --type config
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --path openconfig:/network-instances/network-instance[name=*] --encoding json_ietf --type config
 ```
 
 Complete configuration on leaf2 and spine.
 
 ```bash
-gnmic -a leaf2:57401 -u admin -p admin --insecure set --update-path openconfig:/ --update-file configs/oc/leaf2-oc.cfg --update-path srl_nokia:/ --update-file configs/srl/leaf2-srl.cfg --encoding json_ietf
+gnmic -a leaf2:57401 -u admin -p NokiaSrl1! --insecure set --update-path openconfig:/ --update-file configs/oc/leaf2-oc.cfg --update-path srl_nokia:/ --update-file configs/srl/leaf2-srl.cfg --encoding json_ietf
 
-gnmic -a spine:57401 -u admin -p admin --insecure set --update-path openconfig:/ --update-file configs/oc/spine-oc.cfg --update-path srl_nokia:/ --update-file configs/srl/spine-srl.cfg --encoding json_ietf
+gnmic -a spine:57401 -u admin -p NokiaSrl1! --insecure set --update-path openconfig:/ --update-file configs/oc/spine-oc.cfg --update-path srl_nokia:/ --update-file configs/srl/spine-srl.cfg --encoding json_ietf
 ```
 
 With the configuration that we pushed, the BGP neighbor sessions should come UP and start advertising the routes.
@@ -265,7 +265,7 @@ As an example, let's verify the status of BGP neighbor `2.2.2.2` on leaf1 using 
 To reduce the output, we will use the `depth` option supported in gNMIc.
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p admin --insecure get --path /network-instance[name=default]/protocols/bgp/neighbor[peer-address=2.2.2.2] --encoding json_ietf --depth 1
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --path /network-instance[name=default]/protocols/bgp/neighbor[peer-address=2.2.2.2] --encoding json_ietf --depth 1
 ```
 
 Expected output:
@@ -348,7 +348,7 @@ We will try the ON-CHANGE option in this section with OpenConfig models.
 Let's stream the out packets counter on `leaf1` using on-change option.
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p admin --insecure sub --path openconfig:/interfaces/interface[name=ethernet-1/1]/state/counters/out-pkts --mode stream --stream-mode on-change
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure sub --path openconfig:/interfaces/interface[name=ethernet-1/1]/state/counters/out-pkts --mode stream --stream-mode on-change
 ```
 
 Because we are using the on-change option, we will only see an output when the counter value changes.

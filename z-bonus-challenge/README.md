@@ -90,13 +90,13 @@ Here's the gNSI Authz policy for reference:
 Here's the command to push this policy:
 
 ```bash
-gnsic -a leaf1 -u admin -p admin --skip-verify authz rotate --policy "{\"name\":\"denog18-gnmi\",\"allow_rules\":[{\"name\":\"gnmi-access\",\"source\":{\"principals\":[\"grclient1\",\"gnmi-clients\"]},\"request\":{\"paths\":[\"/gnmi.gNMI/Get\",\"/gnmi.gNMI/Subscribe\"]}}],\"deny_rules\":[{\"name\":\"gnmi-access\",\"source\":{\"principals\":[\"grclient1\",\"gnmi-clients\"]},\"request\":{\"paths\":[\"/gnmi.gNMI/Set\"]}}]}"
+gnsic -a leaf1 -u admin -p NokiaSrl1! --skip-verify authz rotate --policy "{\"name\":\"denog18-gnmi\",\"allow_rules\":[{\"name\":\"gnmi-access\",\"source\":{\"principals\":[\"grclient1\",\"gnmi-clients\"]},\"request\":{\"paths\":[\"/gnmi.gNMI/Get\",\"/gnmi.gNMI/Subscribe\"]}}],\"deny_rules\":[{\"name\":\"gnmi-access\",\"source\":{\"principals\":[\"grclient1\",\"gnmi-clients\"]},\"request\":{\"paths\":[\"/gnmi.gNMI/Set\"]}}]}"
 ```
 
 Verify the new policy is installed:
 
 ```bash
-gnmic -a leaf1 -u admin -p admin --skip-verify get --path /system/aaa/authorization/authz-policy --encoding json_ietf
+gnmic -a leaf1 -u admin -p NokiaSrl1! --skip-verify get --path /system/aaa/authorization/authz-policy --encoding json_ietf
 ```
 
 > [!NOTE]
@@ -122,7 +122,7 @@ Install a default route using gRIBI on `leaf1` with next-hop pointing to the dir
 Get the list of current routes using gNMI Get:
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p admin --insecure get --path "/network-instance[name=default]/route-table/ipv4-unicast" --encoding json_ietf --depth 2 | grep -E "prefix|active|type"
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --path "/network-instance[name=default]/route-table/ipv4-unicast" --encoding json_ietf --depth 2 | grep -E "prefix|active|type"
 ```
 
 Make sure that there is no default route.
@@ -165,13 +165,13 @@ operations:
 Copy the payload to a file named `default-route.yml` and use gRIBIc to inject this route.
 
 ```bash
-gribic -a leaf1:57401 -u admin -p admin --insecure modify --input-file default-route.yml
+gribic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure modify --input-file default-route.yml
 ```
 
 Verify using gNMI Get that the default route is installed.
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p admin --insecure get --path "/network-instance[name=default]/route-table/ipv4-unicast" --encoding json_ietf --depth 2 | grep -E "prefix|active|type"
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --path "/network-instance[name=default]/route-table/ipv4-unicast" --encoding json_ietf --depth 2 | grep -E "prefix|active|type"
 ```
 
 Expected output:

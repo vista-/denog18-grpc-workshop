@@ -153,7 +153,7 @@ This is the Authz policy payload that we will push. This gives access to gNOI Fi
 Push the policy using gNSIc.
 
 ```bash
-gnsic -a leaf1 -u admin -p admin --skip-verify authz rotate --policy "{\"name\":\"Ext-clients\",\"allow_rules\":[{\"name\":\"backup-access\",\"source\":{\"principals\":[\"gnoic1\",\"gnoi-clients\"]},\"request\":{\"paths\":[\"/gnoi.file.File/Get\",\"/gnoi.file.File/Stat\"]}}],\"deny_rules\":[{\"name\":\"backup-access\",\"source\":{\"principals\":[\"gnoic1\",\"gnoi-clients\"]},\"request\":{\"paths\":[\"/gnoi.file.File/Put\"]}}]}"
+gnsic -a leaf1 -u admin -p NokiaSrl1! --skip-verify authz rotate --policy "{\"name\":\"Ext-clients\",\"allow_rules\":[{\"name\":\"backup-access\",\"source\":{\"principals\":[\"gnoic1\",\"gnoi-clients\"]},\"request\":{\"paths\":[\"/gnoi.file.File/Get\",\"/gnoi.file.File/Stat\"]}}],\"deny_rules\":[{\"name\":\"backup-access\",\"source\":{\"principals\":[\"gnoic1\",\"gnoi-clients\"]},\"request\":{\"paths\":[\"/gnoi.file.File/Put\"]}}]}"
 ```
 
 Expected output:
@@ -168,7 +168,7 @@ INFO[0001] "leaf1:57400": closing stream
 Verify that the authz policy was applied on the system. We will use gNMI Get RPC for this purpose.
 
 ```bash
-gnmic -a leaf1 -u admin -p admin --skip-verify get --path /system/aaa/authorization/authz-policy --encoding json_ietf
+gnmic -a leaf1 -u admin -p NokiaSrl1! --skip-verify get --path /system/aaa/authorization/authz-policy --encoding json_ietf
 ```
 
 Expected output:
@@ -270,7 +270,7 @@ Assuming our starting point is an insecure connection, we will build a TLS profi
 ### 4.2.1 Create a TLS Profile
 
 ```bash
-gnsic -a leaf1:57401 -u admin -p admin --insecure certz add-profile --id Corp-Sec-A
+gnsic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure certz add-profile --id Corp-Sec-A
 ```
 
 Expected output:
@@ -282,7 +282,7 @@ INFO[0000] leaf1:57401: added profile "Corp-Sec-A"
 ### 4.2.2 Verify TLS Profiles
 
 ```bash
-gnsic -a leaf1:57401 -u admin -p admin --insecure certz get-profile-list
+gnsic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure certz get-profile-list
 ```
 
 Expected output:
@@ -301,7 +301,7 @@ Next, check if the switch can generate a Certificate Signing Request (CSR). If t
 ### 4.2.3 CanGenerateCSR
 
 ```bash
-gnsic -a leaf1:57401 -u admin -p admin --insecure certz can-gen-csr --cn containerlab.dev
+gnsic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure certz can-gen-csr --cn containerlab.dev
 ```
 
 Expected output:
@@ -333,7 +333,7 @@ We will add the `leaf1` management IP into the SAN field of the certificate.
 ### 4.2.4 Generate CSR
 
 ```bash
-gnsic -a leaf1:57401 -u admin -p admin --insecure certz rotate --cn containerlab.dev --ca-cert ca.pem --ca-key ca.key --id Corp-Sec-A --version 2 --san-ip-address "172.20.20.2"
+gnsic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure certz rotate --cn containerlab.dev --ca-cert ca.pem --ca-key ca.key --id Corp-Sec-A --version 2 --san-ip-address "172.20.20.2"
 ```
 
 Expected output:
@@ -368,7 +368,7 @@ Verify that the new TLS profile is configured with these signed certificates. We
 ### 4.2.5 Verify
 
 ```bash
-gnmic -a leaf1 -u admin -p admin --skip-verify get --path /system/tls/server-profile[name=Corp-Sec-A] --encoding json_ietf
+gnmic -a leaf1 -u admin -p NokiaSrl1! --skip-verify get --path /system/tls/server-profile[name=Corp-Sec-A] --encoding json_ietf
 ```
 
 Expected output:
@@ -420,7 +420,7 @@ We will use gNMI Set RPC for this purpose.
 ### 4.2.6 gNMI Set
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p admin --insecure set --update-path /system/grpc-server[name=mgmt]/tls-profile --update-value Corp-Sec-A
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure set --update-path /system/grpc-server[name=mgmt]/tls-profile --update-value Corp-Sec-A
 ```
 
 Expected output:
@@ -444,7 +444,7 @@ To verify that the new TLS profile is working, let's get the Management port sta
 ### 4.2.7 gNMI Get
 
 ```bash
-gnmic -a 172.20.20.2 -u admin -p admin --tls-ca ca.pem get --path /interface[name=mgmt0]/statistics --encoding json_ietf
+gnmic -a 172.20.20.2 -u admin -p NokiaSrl1! --tls-ca ca.pem get --path /interface[name=mgmt0]/statistics --encoding json_ietf
 ```
 
 ## Next Section: [gRIBI Service](/gribi/README.md)

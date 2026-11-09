@@ -155,7 +155,7 @@ The Healthz RPC can be used to verify the health of the router components like l
 Along with checking the health of the components, the RPC also generates a tech support file that can be used to troubleshoot in case the part is not healthy.
 
 ```bash
-gnoic -a leaf1:57401 -u admin -p admin --insecure healthz check --path /platform/fan-tray[id=1]
+gnoic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure healthz check --path /platform/fan-tray[id=1]
 ```
 
 > [!NOTE]
@@ -289,7 +289,7 @@ The following commands can be used to automate software upgrade using gNOI RPCs.
 To verify the current software version on the device:
 
 ```bash
-gnoic -a leaf1:57401 -u admin -p admin --insecure os verify
+gnoic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure os verify
 ```
 
 Expected output:
@@ -305,7 +305,7 @@ Expected output:
 To transfer a software image file to the device:
 
 ```bash
-gnoic -a leaf1:57401 -u admin -p admin --insecure os install --version srlinux_23.10.1-218 --pkg ../23.10/srlinux-23.10.1-218.bin
+gnoic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure os install --version srlinux_23.10.1-218 --pkg ../23.10/srlinux-23.10.1-218.bin
 ```
 
 In these commands, `version` refers to the software version of the image being transferred and `pkg` refers to the location of the image file on the host VM.
@@ -329,7 +329,7 @@ INFO[0030] target "leaf1:57401": TransferContent done...
 To activate a software image on the device:
 
 ```bash
-gnoic -a leaf1:57401 -u admin -p admin --insecure os activate --version 23.10.1-218
+gnoic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure os activate --version 23.10.1-218
 ```
 
 Expected output:

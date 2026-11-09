@@ -251,7 +251,7 @@ To try this, we will replace the SNMP section with a new config that has a diffe
 Verify the current SNMP configuration on leaf1:
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --path /system/snmp --encoding json_ietf -t config
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --path /system/snmp --encoding json_ietf --type config
 ```
 
 Expected output:
@@ -318,7 +318,7 @@ Expected output:
 Now verify the SNMP config using the Get method.
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --path /system/snmp --encoding json_ietf -t config
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --path /system/snmp --encoding json_ietf --type config
 ```
 
 Expected output:
@@ -393,7 +393,7 @@ Expected output:
 Verify the updated SNMP communities using Get RPC.
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --path /system/snmp --encoding json_ietf -t config
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --path /system/snmp --encoding json_ietf --type config
 ```
 
 ### 1.3.6 Commit Confirm

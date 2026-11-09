@@ -96,7 +96,7 @@ We will be using gNMI to get this state information.
 ### 5.1.4 gNMI Get
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p admin --insecure get --path "/network-instance[name=default]/route-table/ipv4-unicast" --encoding json_ietf --depth 2 | grep -E "prefix|active|type"
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --path "/network-instance[name=default]/route-table/ipv4-unicast" --encoding json_ietf --depth 2 | grep -E "prefix|active|type"
 ```
 
 <details>
@@ -133,7 +133,7 @@ Before we push the route, let's get the currently installed gRIBI routes.
 ### 5.1.5 gRIBI Get
 
 ```bash
-gribic -a leaf1:57401 -u admin -p admin --insecure get --ns default --aft ipv4
+gribic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --ns default --aft ipv4
 ```
 
 Expected output:
@@ -151,7 +151,7 @@ Now, let's push the gRIBI route. The route payload shown above is saved in a fil
 ### 5.1.6 gRIBI Modify
 
 ```bash
-gribic -a leaf1:57401 -u admin -p admin --insecure modify --input-file grib-input.yml
+gribic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure modify --input-file grib-input.yml
 ```
 
 <details>
@@ -245,7 +245,7 @@ The operation is successful. Let's get the gRIBI installed route.
 ### 5.1.7 gRIBI Get Destination Prefix
 
 ```bash
-gribic -a leaf1:57401 -u admin -p admin --insecure get --ns default --aft ipv4
+gribic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --ns default --aft ipv4
 ```
 
 Expected output:
@@ -274,7 +274,7 @@ Get the gRIBI installed next hop group:
 ### 5.1.8 gRIBI Get NHG
 
 ```bash
-gribic -a leaf1:57401 -u admin -p admin --insecure get --ns default --aft nhg
+gribic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --ns default --aft nhg
 ```
 
 Expected output:
@@ -303,7 +303,7 @@ Get the gRIBI installed next hop:
 ### 5.1.9 gRIBI Get Next Hop
 
 ```bash
-gribic -a leaf1:57401 -u admin -p admin --insecure get --ns default --aft nh
+gribic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --ns default --aft nh
 ```
 
 Expected output:
@@ -332,7 +332,7 @@ Now let's verify the route table on leaf1 and confirm that there is a route for 
 ### 5.1.10 gNMI Get
 
 ```bash
-gnmic -a leaf1:57401 -u admin -p admin --insecure get --path "/network-instance[name=default]/route-table/ipv4-unicast" --encoding json_ietf --depth 2 | grep -E "prefix|active|type"
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --path "/network-instance[name=default]/route-table/ipv4-unicast" --encoding json_ietf --depth 2 | grep -E "prefix|active|type"
 ```
 
 <details>
@@ -386,7 +386,7 @@ Flush all gRIBI routes:
 ### 5.1.12 gRIBI Flush
 
 ```bash
-gribic -a leaf1:57401 -u admin -p admin --insecure flush --ns default --override
+gribic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure flush --ns default --override
 ```
 
 Expected output:

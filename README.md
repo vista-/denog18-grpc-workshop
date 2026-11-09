@@ -153,17 +153,13 @@ Find the nodename or IP address of the device from the above output and then use
 
 Username: `admin`
 
-Password: `admin` (the default password for SR Linux deployed in Containerlab is `NokiaSrl1!`, but this is changed as part of the custom startup-config)
+Password: `NokiaSrl1!` (default password for SR Linux containers)
 
-<<<<<<< HEAD
-```
-=======
 > [!NOTE]
 > Make sure to save your work that you do on the workshop VM!
 > We will be tearing them down right after the workshop ends.
 
 ```bash
->>>>>>> 9c1b39d (Consistency)
 ssh leaf1
 ```
 
