@@ -196,9 +196,9 @@ all:
 
       vars:
         # Common credentials for all switches in this group
-        gnoi_port: 57400
+        gnoi_port: 57401
         gnoi_user: admin
-        gnoi_pass: $EVENT_PASSWORD
+        gnoi_pass: "{{ lookup('env', 'EVENT_PASSWORD') }}"
 
         # The universal ping list
         ping_targets:
@@ -241,14 +241,12 @@ cat << EOF >> ping-playbook.yml
     - name: Evaluate ping results
       ansible.builtin.set_fact:
         ping_report: >-
-          {{ ping_report | default([]) + [{
-            'ip': item.item.ip,
-            'vrf': item.item.vrf,
-            'ok': ((item.stdout | from_json).response.received | default(0)) >= 1
-          }] }}
-      loop: "{{ raw_ping_results.results }}"
-      loop_control:
-        label: "{{ item.item.ip }}"
+          {%- set out = [] -%}
+          {%- for r in raw_ping_results.results -%}
+          {%- set counts = (r.stdout | default('')) | regex_findall('"received": *"?([0-9]+)') | map('int') | list -%}
+          {%- set _ = out.append({'ip': r.item.ip, 'vrf': r.item.vrf, 'ok': ((counts + [0]) | max) >= 1}) -%}
+          {%- endfor -%}
+          {{ out }}
 
     - name: Report ping results
       ansible.builtin.debug:
@@ -282,7 +280,7 @@ Expected output:
 
 ## 3.8 Software Upgrade Using gNOI
 
-This section is theory only as these RPCs cannot be implemented on a node in Containerlab.
+This section is **theory only** as these RPCs cannot be implemented on a node in Containerlab.
 
 The following commands can be used to automate software upgrade using gNOI RPCs.
 

@@ -3,3 +3,4 @@ corrupt.img
 *.bkp
 ca.*
 etc
+ping-*
