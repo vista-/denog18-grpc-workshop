@@ -159,7 +159,7 @@ gnoic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure healthz check --path /pla
 ```
 
 > [!NOTE]
-> Wait for a few seconds for the output as the system will be generating a Tech Support file.
+> Wait for a few seconds for the output as the system will be generating a tech-support file.
 
 Expected output:
 
@@ -172,6 +172,15 @@ Expected output:
 ```
 
 As this is a containerlab node, the health status is Unspecified.
+
+Using the returned artifact ID, you could now fetch the generated tech-support file using the following command:
+
+```bash
+gnoic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure healthz artifact --id 1749085078894083190
+```
+
+> [!NOTE]
+> The automated tech-support file generation and retrieval is a valid use-case. The analysis of the tech-suport file can only be done by the Nokia support organization. We cannot do anything with the retrieved tech-support file in this workshop. 
 
 ## 3.7 gNOI Automation Using Ansible (Optional)
 
