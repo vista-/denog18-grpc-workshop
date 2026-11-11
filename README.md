@@ -4,24 +4,26 @@
 
 Welcome to the workshop on *Mastering gRPC-based services for network automation* at DENOG 18!
 
-This README is your starting point into the hands-on section of this workshop.
+This README is your starting point for the hands-on section of the workshop.
 
-You will need a laptop with an SSH client and/or a web browser to fully participate in this workshop.
+You will need a laptop with an SSH client and/or a web browser to take part in this workshop.
 
-If you need help, please raise your hand and a Nokia team member will be happy to assist. :)
+If you need help, just raise your hand and a Nokia team member will be happy to help :)
 
 ### 0.1 Lab Environment
 
-A Nokia team member will provide you a note with your workshop instance ID, and we will also show you the login credentials to your workshop VMs.
+A Nokia team member will give you a note with your workshop instance ID, and we will show you the login credentials for your workshop VMs.
 
-Each participant will be provided their own Linux VM to work on during this workshop. Your workshop VMs will be accessible at `<instance ID>.ws.dcf.network`.
+Each participant gets their own Linux VM to work on during this workshop. Your workshop VMs will be accessible at `<instance ID>.denog.dcf.network`. The login credentials will be shared with you as part of the introduction.
 
-The workshop VMs will be accessible through SSH, running on non-standard port 2222, and via a hosted Visual Studio Code instance, on port 8443, available through a web browser.  
-The password for the hosted Visual Studio Code instance is the same as the login password.
+The workshop VMs will be accessible through **SSH, running on non-standard port 2222**, and via a **hosted Visual Studio Code instance, on port 8443**, available through a web browser.  
+
+The password for the hosted Visual Studio Code instance is the same as the login password.  
+Please note that if you would like to connect your own VS Code instance to the VM, you need to use port 2222 for the Remote-Connect plugin, not port 8443. 
 
 > [!CAUTION]
-> Make sure to save your work that you do on the workshop VM!
-> We will be tearing them down right after the workshop ends.
+> Make sure to save any work you do on the workshop VM!
+> We will tear the VMs down right after the workshop ends.
 
 If you would like to run the lab on your own system or VM, either during the workshop or on your own time, please make sure you have the following available on a recent Linux system:
 
@@ -29,7 +31,7 @@ If you would like to run the lab on your own system or VM, either during the wor
 - Ability to pull OCI (Docker) images from ghcr.io
 - Installations of `gnmic`, `gnoic`, `gnsic` and `gribic`. See the [section below](#grpc-clients) on how to install these gRPC clients
 
-This workshop lab can also be deployed using GitHub Codespaces, as an alternate solution to running it on your own VM. Once you are logged into GitHub, click the icon below and wait for 2 minutes for codespaces to be ready. During this initialization, Codespaces will install Containerlab and gRPC clients so that you are all set to run the use cases immediately.
+This workshop lab can also be deployed using GitHub Codespaces, as an alternative to running it on your own VM. Once you are logged into GitHub, click the icon below and wait about 2 minutes for Codespaces to be ready. During this initialization, Codespaces will install Containerlab and gRPC clients so that you are all set to run the use cases immediately.
 
 <div align=center>
 <a href="https://codespaces.new/vista-/denog18-grpc-workshop?quickstart=1">
@@ -44,7 +46,7 @@ This workshop lab can also be deployed using GitHub Codespaces, as an alternate 
 
 ## Workshop
 
-The objective of the hands-on section of this workshop is the following:
+In the hands-on section of this workshop you will work on the following:
 
 - Configuring, retrieving state, streaming telemetry using gNMI
 - File backup, restore and software upgrade prep using gNOI
@@ -53,7 +55,7 @@ The objective of the hands-on section of this workshop is the following:
 
 ## Lab Topology
 
-Each workshop participant will be working with their own switch topology consisting of 2 leaf and 1 spine switches along with 2 clients. The leaf-spine architecture is typical in a data center environment and clients are simulating workloads or VMs.
+Each workshop participant will be working with their own switch topology consisting of 2 leaf and 1 spine switches along with 2 clients. The leaf-spine architecture is typical in a data center environment and the clients simulate workloads or VMs.
 
 ![image](images/denog18-grpc.svg)
 
@@ -62,9 +64,9 @@ Each workshop participant will be working with their own switch topology consist
 Both leafs and spine nodes in the workshop topology are running release 26.7.1 of Nokia [SR Linux](https://www.nokia.com/networks/ip-networks/service-router-linux-NOS/).  
 The workshop focuses on the standards-based gRPC services, so in theory, you might be able to use other network OSes if you later wish to reproduce this workshop with a different network stack.
 
-Both clients in the topology are a light version of [Alpine Linux](https://alpinelinux.org/).
+Both clients in the topology are a lightweight version of [Alpine Linux](https://alpinelinux.org/).
 
-The switches and clients are both pre-configured to allow for basic connectivity - the switches have BGP underlay sessions (distributing loopback routes) and overlay sessions (for EVPN routes) configured, and a MAC-VRF (L2VPN) service allows the two clients to communicate.
+The switches and clients are both pre-configured to allow for basic connectivity: the switches have BGP underlay sessions (distributing loopback routes) and overlay sessions (for EVPN routes) configured, and a MAC-VRF (L2VPN) service allows the two clients to communicate.
 
 See the [topology file](denog18-grpc.clab.yml) for more details.
 
@@ -74,7 +76,7 @@ See the [topology file](denog18-grpc.clab.yml) for more details.
 
 Log in to the VM using the credentials on your sheet.
 
-Containerlab is already pre-installed on your VM, but if you are following along at home or on your own Linux system, run the following command to install Containerlab and its dependencies (including Docker):
+Containerlab is already installed on your VM, but if you are following along at home or on your own Linux system, run the following command to install Containerlab and its dependencies (including Docker):
 
 ```bash
 curl -sL https://containerlab.dev/setup | sudo -E bash -s "all"
@@ -149,15 +151,15 @@ sudo clab inspect --all
 
 ### 1.2 Connecting to the Devices
 
-Find the nodename or IP address of the device from the above output and then use SSH.
+Find the node name or IP address of the device in the output above, then connect with SSH.
 
 Username: `admin`
 
 Password: `NokiaSrl1!` (default password for SR Linux containers)
 
 > [!NOTE]
-> Make sure to save your work that you do on the workshop VM!
-> We will be tearing them down right after the workshop ends.
+> Make sure to save any work you do on the workshop VM!
+> We will tear the VMs down right after the workshop ends.
 
 ```bash
 ssh leaf1
@@ -178,7 +180,7 @@ To derive IPv6 addresses, replace the dots with colons, with the last dot being 
 ### 1.3 Verifying Reachability Between Devices
 
 After the lab is deployed, check reachability between leaf and spine devices using ping.  
-In SR Linux, the ping command runs in the management network-instance unless otherwise specified, so the network-instance argument should be set as `default`.
+In SR Linux, the ping command runs in the management network-instance unless otherwise specified, so set the network-instance argument to `default`.
 
 Example on `spine` to `leaf1` for IPv4:
 
@@ -201,7 +203,7 @@ We will be using the following gRPC clients:
 - [gNSIc](https://github.com/karimra/gnsic)
 - [gRIBIc](https://gribic.kmrd.dev/)
 
-All 4 clients are installed by default on the VM provided to you.
+All 4 clients come preinstalled on your VM.
 
 Verify that clients are installed on your VM:
 
@@ -216,7 +218,7 @@ If, for any reason, one of the above clients needs to be re-installed or updated
 
 For gNSIc client build instructions, refer to the [gnsi-build.sh](gnsi-build.sh) script in this repo.
 
-All `gnmic`, `gnoic`, `gnsic` and `gribic` commands should be executed from the VM, not from the containerized clients!
+Run all `gnmic`, `gnoic`, `gnsic` and `gribic` commands from the VM itself. Do not run them inside the containerized clients!
 
 ![image](images/lab-setup.jpg)
 
@@ -224,7 +226,7 @@ All `gnmic`, `gnoic`, `gnsic` and `gribic` commands should be executed from the 
 
 Before we get on with the use cases, let's verify the gRPC server configuration on the SR Linux nodes and confirm whether all required gRPC services are enabled.
 
-There are 2 gRPC servers configured on all 3 SR Linux devices - `mgmt` (secure using TLS) and `insecure-mgmt` (not using TLS).
+There are 2 gRPC servers configured on all 3 SR Linux devices: `mgmt` (secure, using TLS) and `insecure-mgmt` (not using TLS).
 
 On either leafs or spine, run the following command to display the gRPC configuration for both servers.
 
@@ -281,9 +283,9 @@ Expected output for insecure gRPC server:
     }
 ```
 
-These have been pre-configured for us by Containerlab - on a production SR Linux device's factory default configuration, the secure `mgmt` gRPC server is present, but not all services are enabled; and the `insecure-mgmt` gRPC server is not present at all.
+Containerlab pre-configured these for us. On the factory default configuration of a production SR Linux device, the secure `mgmt` gRPC server is present but not all services are enabled, and the `insecure-mgmt` gRPC server is not present at all.
 
-We can see that all 4 gRPC services for this workshop are enabled on both gRPC servers.
+All 4 gRPC services for this workshop are enabled on both gRPC servers.
 
 The secure gRPC server is listening on the default gRPC port (57400) while the insecure gRPC server is listening on port 57401.
 

@@ -1,16 +1,20 @@
 # Bonus Challenges
 
-Run these challenges on the gRIBI lab (see the [gRIBI section](../gribi/README.md)).
+Run these challenges on the gRIBI lab (see the [gRIBI section](../gribi/README.md)).  
+Since the gRIBI routes are flushed at the end of the task, it is not necessary to complete the full activity, only the topology needs to be deployed.
 
-## Bonus 1 Securing gNMI Service
+## Bonus 1: Securing gNMI Service
 
-When setting up streaming telemetry to an external system, by default the system allows gNMI Get, Set and Subscribe from the external system.
+By default, the switches allow gNMI Get, Set and Subscribe RPCs to be performed.  
+When setting up an external monitoring system, the user used for the gNMI-based streaming telemetry has no business being able to run Set RPCs, that is, to modify the switch configuration.
 
-Configure a new user `grclient1` on `leaf1` that will be used for streaming telemetry.
+To secure our telemetry system, we should set up a separate user with restricted access!
 
 ### Create the Telemetry User
 
-Log in to `leaf1` and run the following commands:
+We need to first configure a new user `grclient1` on `leaf1` that will be used for streaming telemetry.
+
+Log in to `leaf1` and run the following commands to create a role `gnmi-clients` and the user `grclient1`:
 
 ```bash
 enter candidate private
@@ -20,23 +24,26 @@ set / system configuration role gnmi-clients rule / action write
 commit now
 ```
 
-Configure a gNSI Authz policy to allow gNMI Get, Subscribe and deny gNMI Set.
+Your task is now to create a gNSI Authz policy to allow gNMI Get, Subscribe and deny gNMI Set to this user and role.
 
-Here are the commands for Get, Set and Subscribe to be run from the VM.
+> [!TIP]
+> Check the [gNSI](/gnsi/README.md) section if you need a hint here.
 
-### gNMI Get
+Here are the Get, Set and Subscribe commands to run from the VM in order to help you test your policy:
+
+gNMI Get:
 
 ```bash
 gnmic -a leaf1 -u grclient1 -p grclient1 --skip-verify get --path /interface[name=ethernet-1/10]/mtu --encoding json_ietf
 ```
 
-### gNMI Set
+gNMI Set:
 
 ```bash
 gnmic -a leaf1 -u grclient1 -p grclient1 --skip-verify set --update /interface[name=ethernet-1/10]/mtu:::json:::4000
 ```
 
-### gNMI Subscribe
+gNMI Subscribe:
 
 ```bash
 gnmic -a leaf1 -u grclient1 -p grclient1 --skip-verify sub --path /interface[name=ethernet-1/1]/statistics/out-packets --mode once
@@ -48,8 +55,8 @@ Here's the gNSI Authz policy for reference:
 
 <details>
 <summary>Authz Solution</summary>
-<br>
-<pre>
+
+```json
 {
   "name": "denog18-gnmi",
   "allow_rules": [
@@ -84,7 +91,8 @@ Here's the gNSI Authz policy for reference:
     }
   ]
 }
-</pre>
+```
+
 </details>
 
 Here's the command to push this policy:
@@ -93,7 +101,7 @@ Here's the command to push this policy:
 gnsic -a leaf1 -u admin -p NokiaSrl1! --skip-verify authz rotate --policy "{\"name\":\"denog18-gnmi\",\"allow_rules\":[{\"name\":\"gnmi-access\",\"source\":{\"principals\":[\"grclient1\",\"gnmi-clients\"]},\"request\":{\"paths\":[\"/gnmi.gNMI/Get\",\"/gnmi.gNMI/Subscribe\"]}}],\"deny_rules\":[{\"name\":\"gnmi-access\",\"source\":{\"principals\":[\"grclient1\",\"gnmi-clients\"]},\"request\":{\"paths\":[\"/gnmi.gNMI/Set\"]}}]}"
 ```
 
-Verify the new policy is installed:
+Verify the new policy is installed using gNMI:
 
 ```bash
 gnmic -a leaf1 -u admin -p NokiaSrl1! --skip-verify get --path /system/aaa/authorization/authz-policy --encoding json_ietf
@@ -108,7 +116,7 @@ After the policy is installed, try gNMI Set:
 gnmic -a leaf1 -u grclient1 -p grclient1 --skip-verify set --update /interface[name=ethernet-1/10]/mtu:::json:::4000
 ```
 
-and the following error should be displayed:
+and you should see the following error:
 
 ```bash
 target "leaf1" set request failed: target "leaf1" SetRequest failed: rpc error: code = PermissionDenied desc = User 'grclient1' is not authorized to use rpc '/gnmi.gNMI/Set'
@@ -125,7 +133,7 @@ Get the list of current routes using gNMI Get:
 gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --path "/network-instance[name=default]/route-table/ipv4-unicast" --encoding json_ietf --depth 2 | grep -E "prefix|active|type"
 ```
 
-Make sure that there is no default route.
+Make sure that there is no default route currently installed.
 
 Install the default route using gRIBI.
 

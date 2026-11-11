@@ -1,12 +1,18 @@
 # 4 gNSI Use Cases
 
-gNSI services and RPCs are used for securing access to and security operations on the switch. This includes authorization policies for gRPC service access, certificate management and accounting.
+gNSI services and RPCs secure access to the switch and cover security operations on it. This includes authorization policies for gRPC service access, certificate management and accounting.
 
-In this section, we will learn about some of these features.
+In this section, we will look at some of these features.
+
+>[!IMPORTANT]
+> The gNSIc client we will be using during this workshop had a small patch applied to it, to allow it to work with newer versions of SR Linux.  
+> We are in the process of upstreaming this patch.
+> If you are following this workshop along at home, without access to the VM, please download a release from or build using the fork located here:
+> https://github.com/mabra94/gnsic 
 
 ## 4.1 gNSI Authz
 
-The Authz RPC can be used to configure an Authorization policy for access to gRPC services.
+The **gNSI Auth** RPC configures an authorization policy for access to gRPC services.
 
 In the previous section on gNOI, we used a user `gnoic1` to get the configuration file backup to the host VM. Because there are no authorization policies in place, this user can also transfer files to the switch.
 
@@ -16,9 +22,12 @@ We will be using gNSI to configure an authorization policy on leaf1 that will pr
 
 Let's start by verifying that the user `gnoic1` has access to list, get and put files on leaf1.
 
-We will switch to using secure gRPC communication for this section as gNSI policies apply to secure requests only.
+We will switch to secure gRPC communication for this section, using the TLS-secured gRPC server running on port 57400, because gNSI policies apply to secure requests only.  
+Due to not having a valid signed certificate, we will need to add `--skip-verify` to our `gnoic` and `gnsic` commands.
 
 ### 4.1.1 List File
+
+Let's first perform a simple gNOI File Stat on `/etc/opt/srlinux/config.json` to test the TLS-secured gRPC server on `leaf1`.
 
 ```bash
 gnoic -a leaf1 -u gnoic1 -p gnoic1 --skip-verify file stat --path /etc/opt/srlinux/config.json
@@ -44,8 +53,8 @@ Expected output:
 
 ```bash
 INFO[0000] "leaf1:57400" received 64000 bytes           
-INFO[0000] "leaf1:57400" received 41988 bytes           
-INFO[0000] "leaf1:57400" file "/etc/opt/srlinux/config.json" saved 
+INFO[0000] "leaf1:57400" received 62835 bytes           
+INFO[0000] "leaf1:57400" file "/etc/opt/srlinux/config.json" saved
 ```
 
 ### 4.1.3 Put File
@@ -78,16 +87,16 @@ gnoic -a leaf1 -u gnoic1 -p gnoic1 --skip-verify file stat --path /var/log/srlin
 Expected output:
 
 ```bash
-+-------------+------------------------------+---------------------------+------------+------------+------+
-| Target Name |             Path             |       LastModified        |    Perm    |   Umask    | Size |
-+-------------+------------------------------+---------------------------+------------+------------+------+
-| leaf1:57401 | /var/log/srlinux/corrupt.img | 2025-05-20T03:06:16-04:00 | -rwxrwxrwx | -----w--w- | 31   |
-+-------------+------------------------------+---------------------------+------------+------------+------+
++-------------+------------------------------+----------------------+------------+------------+------+
+| Target Name |             Path             |     LastModified     |    Perm    |   Umask    | Size |
++-------------+------------------------------+----------------------+------------+------------+------+
+| leaf1:57400 | /var/log/srlinux/corrupt.img | 2026-11-11T11:51:45Z | -rwxrwxrwx | -----w--w- | 31   |
++-------------+------------------------------+----------------------+------------+------------+------+
 ```
 
 ### 4.1.4 Remove the Transferred File
 
-Delete the transferred file using the `File Remove` RPC.
+Delete the transferred file using the gNOI File Remove RPC.
 
 ```bash
 gnoic -a leaf1 -u gnoic1 -p gnoic1 --skip-verify file remove --path /var/log/srlinux/corrupt.img
@@ -99,16 +108,18 @@ Expected output:
 INFO[0000] "leaf1:57400" file "/var/log/srlinux/corrupt.img" removed successfully 
 ```
 
-At this time, the user `gnoic1` has permissions to transfer a file over to leaf1.
+### 4.1.5 Push the Authz Policy
 
-Let's block that by pushing an authorization policy using gNSI Authz service.
+At this point, we verified that user `gnoic1` has permission to transfer a file over to leaf1.
 
-This is the Authz policy payload that we will push. This gives access to gNOI File Get and Stat to the user `gnoic1` and will deny gNOI File Put for this user.
+Let's block that by pushing an authorization policy with the gNSI Authz service!
+
+This is the Authz policy payload that we will push. It gives the user `gnoic1` access to gNOI File Get and File Stat RPCs, and denies the gNOI File Put RPC.
 
 <details>
 <summary>Authz Payload</summary>
-<br>
-<pre>
+
+```json
 {
   "name": "Ext-clients",
   "allow_rules": [
@@ -145,12 +156,11 @@ This is the Authz policy payload that we will push. This gives access to gNOI Fi
     }
   ]
 }
-</pre>
+```
+
 </details>
 
-### 4.1.5 Push the Authz Policy
-
-Push the policy using gNSIc.
+We have pre-formatted this for you, so you can easily paste the entire `gnsic` command into your terminal.
 
 ```bash
 gnsic -a leaf1 -u admin -p NokiaSrl1! --skip-verify authz rotate --policy "{\"name\":\"Ext-clients\",\"allow_rules\":[{\"name\":\"backup-access\",\"source\":{\"principals\":[\"gnoic1\",\"gnoi-clients\"]},\"request\":{\"paths\":[\"/gnoi.file.File/Get\",\"/gnoi.file.File/Stat\"]}}],\"deny_rules\":[{\"name\":\"backup-access\",\"source\":{\"principals\":[\"gnoic1\",\"gnoi-clients\"]},\"request\":{\"paths\":[\"/gnoi.file.File/Put\"]}}]}"
@@ -165,7 +175,7 @@ INFO[0001] "leaf1:57400": sending finalize request
 INFO[0001] "leaf1:57400": closing stream 
 ```
 
-Verify that the authz policy was applied on the system. We will use gNMI Get RPC for this purpose.
+Verify that the Authz policy was applied on the system. We will use gNMI Get RPC for this purpose.
 
 ```bash
 gnmic -a leaf1 -u admin -p NokiaSrl1! --skip-verify get --path /system/aaa/authorization/authz-policy --encoding json_ietf
@@ -173,12 +183,12 @@ gnmic -a leaf1 -u admin -p NokiaSrl1! --skip-verify get --path /system/aaa/autho
 
 Expected output:
 
-```bash
+```json
 [
   {
     "source": "leaf1",
-    "timestamp": 1747726096665629489,
-    "time": "2025-05-20T03:28:16.665629489-04:00",
+    "timestamp": 1794398428823103117,
+    "time": "2026-11-11T12:00:28.823103117Z",
     "updates": [
       {
         "Path": "srl_nokia-system:system/srl_nokia-aaa:aaa/authorization/srl_nokia-gnsi-authz:authz-policy",
@@ -187,45 +197,62 @@ Expected output:
             "counters": {
               "rpc": [
                 {
-                  "access-accepts": "4",
+                  "access-accepts": "6",
                   "access-rejects": "0",
-                  "last-access-accept": "2025-05-20T07:28:16.661Z",
+                  "last-access-accept": "2026-11-10T14:20:15.088Z",
+                  "name": "/gnmi.gNMI/Capabilities"
+                },
+                {
+                  "access-accepts": "32",
+                  "access-rejects": "0",
+                  "last-access-accept": "2026-11-11T12:00:28.821Z",
                   "name": "/gnmi.gNMI/Get"
+                },
+                {
+                  "access-accepts": "17",
+                  "access-rejects": "0",
+                  "last-access-accept": "2026-11-11T11:13:09.553Z",
+                  "name": "/gnmi.gNMI/Set"
+                },
+                {
+                  "access-accepts": "39",
+                  "access-rejects": "0",
+                  "last-access-accept": "2026-11-11T11:37:39.320Z",
+                  "name": "/gnmi.gNMI/Subscribe"
                 },
                 {
                   "access-accepts": "1",
                   "access-rejects": "0",
-                  "last-access-accept": "2025-05-20T07:23:00.183Z",
+                  "last-access-accept": "2026-11-11T11:51:10.503Z",
                   "name": "/gnoi.file.File/Get"
                 },
                 {
-                  "access-accepts": "0",
-                  "access-rejects": "2",
-                  "last-access-reject": "2025-05-20T07:23:35.004Z",
+                  "access-accepts": "1",
+                  "access-rejects": "0",
+                  "last-access-accept": "2026-11-11T11:51:45.496Z",
                   "name": "/gnoi.file.File/Put"
                 },
                 {
                   "access-accepts": "1",
-                  "access-rejects": "1",
-                  "last-access-accept": "2025-05-20T07:25:09.619Z",
-                  "last-access-reject": "2025-05-20T07:24:36.303Z",
+                  "access-rejects": "0",
+                  "last-access-accept": "2026-11-11T11:52:16.526Z",
                   "name": "/gnoi.file.File/Remove"
                 },
                 {
-                  "access-accepts": "7",
+                  "access-accepts": "4",
                   "access-rejects": "0",
-                  "last-access-accept": "2025-05-20T07:25:09.538Z",
+                  "last-access-accept": "2026-11-11T11:52:16.501Z",
                   "name": "/gnoi.file.File/Stat"
                 },
                 {
-                  "access-accepts": "5",
+                  "access-accepts": "1",
                   "access-rejects": "0",
-                  "last-access-accept": "2025-05-20T07:28:13.277Z",
+                  "last-access-accept": "2026-11-11T11:57:23.079Z",
                   "name": "/gnsi.authz.v1.Authz/Rotate"
                 }
               ]
             },
-            "created-on": "2179-09-19T07:42:44.972Z",
+            "created-on": "2362-06-18T21:06:29.009Z",
             "policy": "{\"name\":\"Ext-clients\",\"allow_rules\":[{\"name\":\"backup-access\",\"source\":{\"principals\":[\"gnoic1\",\"gnoi-clients\"]},\"request\":{\"paths\":[\"/gnoi.file.File/Get\",\"/gnoi.file.File/Stat\"]}}],\"deny_rules\":[{\"name\":\"backup-access\",\"source\":{\"principals\":[\"gnoic1\",\"gnoi-clients\"]},\"request\":{\"paths\":[\"/gnoi.file.File/Put\"]}}]}",
             "version": ""
           }
@@ -236,14 +263,14 @@ Expected output:
 ]
 ```
 
-> [!NOTE]
-> As the gNSIc client is in the beta phase, it might not push the policy in the first attempt. If gNMI Get is still showing the default policy, repeat the gNSIc Authz command to push the policy again.
+> [!WARNING]
+> Because the gNSIc client is in beta, it might not push the policy on the first attempt. If gNMI Get is still showing the default policy, repeat the gNSIc Authz command to push the policy again.
 
-Now, test the list, get, put file operations again.
+Now test the gNOI List, Get and Put file operations again using the `gnoic1` user!
 
 Refer to the steps in [Section 4.1](#41-gnsi-authz).
 
-Put operation will be denied with the following output.
+The Put operation is denied by the Authz Policy, with the following output.
 
 ```bash
 INFO[0000] "leaf1:57400" sending file="corrupt.img" hash 
@@ -261,9 +288,8 @@ tools system aaa authorization authz-policy remove
 
 ## 4.2 TLS Certificate Management
 
-Another use case of gNSI is to configure and manage TLS profile and certificates on the switch.
-
-gNSI Certz RPCs are used for this purpose.
+Another gNSI use-case is configuring and managing TLS profiles and certificates on the switch.  
+The gNSI **Certz RPCs** handle this.
 
 Assuming our starting point is an insecure connection, we will build a TLS profile with certificates and use it on a gRPC server to make our connection secure.
 
@@ -296,12 +322,40 @@ Expected output:
 +-------------+-------------------+
 ```
 
-Next, check if the switch can generate a Certificate Signing Request (CSR). If the switch can generate one, then we can avoid generating certificates outside the switch and transferring them over to the switch. Our certificate common name (CN) will be `containerlab.dev`.
 
 ### 4.2.3 CanGenerateCSR
 
+On your host VM, run:
+
 ```bash
-gnsic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure certz can-gen-csr --cn containerlab.dev
+containerlab tools cert ca create
+```
+
+This creates 2 files, `ca.key` and `ca.pem`, a RSA-2048 key-pair and a CA certificate signed using SHA-256, which will be used to sign the CSR generated by the switch.
+
+In order to verify the crypto suite we need to use, we can use the `openssl` command to view information about our CA certificate:
+
+```bash
+openssl x509 -in ca.pem -noout -text | head -n13
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 2019 (0x7e3)
+        Signature Algorithm: sha256WithRSAEncryption    <------
+        Issuer: C = Internet, L = Server, O = Containerlab, OU = Containerlab Tools, CN = containerlab.dev
+        Validity
+            Not Before: Nov 11 13:27:10 2026 GMT
+            Not After : Nov  8 13:27:10 2036 GMT
+        Subject: C = Internet, L = Server, O = Containerlab, OU = Containerlab Tools, CN = containerlab.dev
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                Public-Key: (2048 bit)                  <------
+```
+
+Next, check if the switch can generate a Certificate Signing Request (CSR) that fits this requirement. If it can, we avoid generating certificates (and more importantly, private keys) outside the switch and transferring them over. The switch-generated CSR's common name (CN) will be `leaf1` and we will use the crypto suite `CSRSUITE_X509_KEY_TYPE_RSA_2048_SIGNATURE_ALGORITHM_SHA_2_256`.
+
+```bash
+gnsic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure certz can-gen-csr --cn leaf1 --csr-suite CSRSUITE_X509_KEY_TYPE_RSA_2048_SIGNATURE_ALGORITHM_SHA_2_256
 ```
 
 Expected output:
@@ -316,78 +370,63 @@ Expected output:
 
 We confirmed that the switch can generate a CSR.
 
-Now we are ready to generate the CSR. Before we do that, create the CA certificate and key to sign the CSR. We will use Containerlab tools for this purpose. In a real environment, the CSR is sent to an external CA for signing.
-
-On your host VM, run:
-
-```bash
-containerlab tools cert ca create
-```
-
-This will create 2 files - `ca.key` and `ca.pem` to sign the switch CSR.
-
-Next we will request the switch to generate a CSR, get it signed and install it back on the switch. All this using a single command.
-
-We will add the `leaf1` management IP into the SAN field of the certificate.
-
 ### 4.2.4 Generate CSR
 
+Next, we ask the switch to generate a CSR, get it signed and install it back on the switch, all with a single `gnsic` command.  
+This uses the Certz Rotate RPC.
+
+We will also add the `leaf1` DNS hostname and management IP into the SAN field of the certificate.
+
 ```bash
-gnsic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure certz rotate --cn containerlab.dev --ca-cert ca.pem --ca-key ca.key --id Corp-Sec-A --version 2 --san-ip-address "172.20.20.2"
+gnsic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure certz rotate --cn leaf1 --dns leaf1 --ca-cert ca.pem --ca-key ca.key --csr-suite CSRSUITE_X509_KEY_TYPE_RSA_2048_SIGNATURE_ALGORITHM_SHA_2_256 --id Corp-Sec-A --version 2 --san-ip-address "172.20.20.2" 
 ```
 
 Expected output:
 
 ```bash
-INFO[0001] leaf1:57401: can generate CSR                
-INFO[0001] leaf1:57401: sending Generate CSR: ssl_profile_id:"Corp-Sec-A"  generate_csr:{params:{common_name:"containerlab.dev"  san:{ips:"172.20.20.2"}}} 
-INFO[0002] leaf1:57401: got CSR back: generated_csr:{certificate_signing_request:{type:CERTIFICATE_TYPE_X509  encoding:CERTIFICATE_ENCODING_PEM  certificate_signing_request:"-----BEGIN CERTIFICATE REQUEST-----\nMIIEgjCCAmoCAQAwGzEZMBcGA1UEAwwQY29udGFpbmVybGFiLmRldjCCAiI
-<---snip---->
-INFO[0002] leaf1:57401: returned CSR:
+INFO[0000] leaf1:57401: can generate CSR                
+INFO[0000] leaf1:57401: sending Generate CSR: ssl_profile_id:"Corp-Sec-A" generate_csr:{params:{csr_suite:CSRSUITE_X509_KEY_TYPE_RSA_2048_SIGNATURE_ALGORITHM_SHA_2_256 common_name:"leaf1" san:{ips:"172.20.20.2"}}} 
+<--snip-->
+INFO[0000] leaf1:57401: returned CSR:
 Certificate Request:
     Data:
         Version: 0 (0x0)
-        Subject: CN=containerlab.dev
+        Subject: CN=leaf1
         Subject Public Key Info:
-<---snip---->
------BEGIN CERTIFICATE REQUEST-----
-MIIEYDCCAkgCAQAwGzEZMBcGA1UEAwwQY29udGFpbmVybGFiLmRldjCCAiIwDQYJ
-<---snip---->
+            Public Key Algorithm: RSA
+                Public-Key: (2048 bit)
+<--snip-->
 -----END CERTIFICATE REQUEST----- 
-INFO[0002] read local CA certs                          
-INFO[0002] leaf1:57401: sending upload request: ssl_profile_id:"Corp-Sec-A"  certificates:{entities:{version:"1"  created_on:1747727317  certificate_chain:{certificate:{type:CERTIFICATE_TYPE_X509  encoding:CERTIFICATE_ENCODING_PEM  certificate:"-----BEGIN CERTIFICATE-----\nMIIEpjCCA46gAwIBAgIRAMXIQyDtYj9sbAqDDjSS7qYwDQYJKoZIhvcNAQELBQAw\nczERMA8GA1UEBhMISW50
-<---snip---->
-lmmMG9Mo13AQ/1lmQV+oMfAo\n-----END CERTIFICATE-----\n"}}}} 
-INFO[0002] leaf1:57401: upload Response certificates:{} 
+INFO[0000] leaf1:57401: sending upload request: ssl_profile_id:"Corp-Sec-A" certificates:{entities:{version:"2" created_on:1794404204 certificate_chain:{certificate:{type:CERTIFICATE_TYPE_X509 encoding:CERTIFICATE_ENCODING_PEM raw_certificate:"-----BEGIN CERTIFICATE-----<--snip-->-----END CERTIFICATE-----\n"}}}} 
+INFO[0000] leaf1:57401: upload response: certificates:{} 
+INFO[0000] leaf1:57401: sending finalize request
 ```
 
-The above output is shortened to show only the relevant parts. We can see the CSR that is generated by the switch, the signed certificate and a confirmation that the certificate was successfully installed on the switch.
+The output above is shortened to show only the relevant parts. We can see the CSR that is generated by the switch, the CSR is signed and the resulting certificate is uploaded and installed on the switch.
+
+### 4.2.5 TLS Profile Verification
 
 Verify that the new TLS profile is configured with these signed certificates. We will use gNMI Get RPC for this purpose.
 
-### 4.2.5 Verify
-
 ```bash
-gnmic -a leaf1 -u admin -p NokiaSrl1! --skip-verify get --path /system/tls/server-profile[name=Corp-Sec-A] --encoding json_ietf
+gnmic -a leaf1 -u admin -p NokiaSrl1! --skip-verify get --path /system/tls/profile[name=Corp-Sec-A] --encoding json_ietf
 ```
 
 Expected output:
 
-```bash
+```json
 [
   {
     "source": "leaf1",
-    "timestamp": 1747727524779497602,
-    "time": "2025-05-20T03:52:04.779497602-04:00",
+    "timestamp": 1794404890040064605,
+    "time": "2026-11-11T13:48:10.040064605Z",
     "updates": [
       {
-        "Path": "srl_nokia-system:system/srl_nokia-tls:tls/server-profile[name=Corp-Sec-A]",
+        "Path": "srl_nokia-system:system/srl_nokia-tls:tls/profile[name=Corp-Sec-A]",
         "values": {
-          "srl_nokia-system:system/srl_nokia-tls:tls/server-profile": {
+          "srl_nokia-system:system/srl_nokia-tls:tls/profile": {
             "authenticate-client": false,
-            "certificate": "-----BEGIN CERTIFICATE-----\nMIIEpjCCA46gAwIBAgIRAMXIQyDtYj9sb
-<---snip---->
-3AQ/1lmQV+oMfAo\n-----END CERTIFICATE-----\n",
+            "certificate": "-----BEGIN CERTIFICATE-----<snip>-----END CERTIFICATE-----\n",
             "cipher-list": [
               "srl_nokia-tls:ecdhe-ecdsa-aes256-gcm-sha384",
               "srl_nokia-tls:ecdhe-ecdsa-aes128-gcm-sha256",
@@ -395,16 +434,18 @@ Expected output:
               "srl_nokia-tls:ecdhe-rsa-aes128-gcm-sha256"
             ],
             "dynamic": true,
-            "key": "$aes1$AW4vXNfViwpbiG8=$QW4WuZ3iG5rTowIuCBjwSv7bQxSZm8YV78r3tZEi5nqVBh8
-<---snip---->
-ho3M8EdNOJ1wRaTVfAgktpzKwV38eev7Skg==",
+            "expiration": "2036-11-08T13:46:49.000Z",
+            "expired": false,
+            "key": "$aes1$AW6PypSrmgvNx28=$<snip>>",
+            "relaxed-crl-verification": true,
             "srl_nokia-gnsi-certz:certz": {
               "certificate": {
-                "created-on": "2025-05-20T07:48:37.000Z",
-                "version": "1"
+                "created-on": "2026-11-11T13:46:49.000Z",
+                "version": "2"
               },
               "ssl-profile-id": "Corp-Sec-A"
-            }
+            },
+            "valid-after": "2026-11-11T12:46:49.000Z"
           }
         }
       }
@@ -413,11 +454,11 @@ ho3M8EdNOJ1wRaTVfAgktpzKwV38eev7Skg==",
 ]
 ```
 
+### 4.2.6 gNMI Set
+
 The new TLS profile is now ready to be used. Let's update the secure gRPC server `mgmt` TLS profile to the new profile.
 
 We will use gNMI Set RPC for this purpose.
-
-### 4.2.6 gNMI Set
 
 ```bash
 gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure set --update-path /system/grpc-server[name=mgmt]/tls-profile --update-value Corp-Sec-A
@@ -425,11 +466,11 @@ gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure set --update-path /system
 
 Expected output:
 
-```bash
+```json
 {
   "source": "leaf1:57401",
-  "timestamp": 1747727840174349515,
-  "time": "2025-05-20T03:57:20.174349515-04:00",
+  "timestamp": 1794405045491601658,
+  "time": "2026-11-11T13:50:45.491601658Z",
   "results": [
     {
       "operation": "UPDATE",
@@ -439,11 +480,16 @@ Expected output:
 }
 ```
 
-To verify that the new TLS profile is working, let's get the Management port statistics using gNMI Get RPC and a secure TLS connection. Because the SAN field had the IP address, we will use the `leaf1` IP as the destination.
+### 4.2.7 gNMI Get Using Secure TLS
 
-### 4.2.7 gNMI Get
+To verify that the new TLS profile is working, let's get the management port statistics using gNMI Get RPC using a secure TLS connection - that means no `--insecure` or `--skip-verify` here!  
+We will have to supply the TLS CA as an additional parameter, since our temporary Containerlab certificate is not in the system root certificate store.
+
+Because the SAN field had the IP address, we can both use `leaf1` and the IP address as a destination:
 
 ```bash
+gnmic -a leaf1 -u admin -p NokiaSrl1! --tls-ca ca.pem get --path /interface[name=mgmt0]/statistics --encoding json_ietf
+
 gnmic -a 172.20.20.2 -u admin -p NokiaSrl1! --tls-ca ca.pem get --path /interface[name=mgmt0]/statistics --encoding json_ietf
 ```
 

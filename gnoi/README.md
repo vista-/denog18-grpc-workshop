@@ -4,7 +4,7 @@ In this section, we will explore gNOI services.
 
 ## 3.1 gNOI System Time
 
-The System Time RPC can be used to get the current timestamp on the router.
+The System Time RPC returns the current timestamp on the router.
 
 This is often used to check connectivity between the client and the router and also to verify whether gNOI is operational on the router (similar to gNMI Capabilities).
 
@@ -18,13 +18,13 @@ Expected output:
 +-------------+-----------------------------------------+---------------------+
 | Target Name |                  Time                   |      Timestamp      |
 +-------------+-----------------------------------------+---------------------+
-| leaf1:57401 | 2025-05-19 13:09:12.601609856 -0400 EDT | 1747674552601609856 |
+| leaf1:57401 | 2026-11-10 12:32:28.587419852 +0000 UTC | 1794313948587419852 |
 +-------------+-----------------------------------------+---------------------+
 ```
 
 ## 3.2 gNOI System Ping
 
-The System Ping RPC can be used to initiate a ping on the router from a client.
+The System Ping RPC lets a client start a ping on the router.
 
 For our test, let's ping the system loopback of `leaf2` from `leaf1`.
 
@@ -43,7 +43,7 @@ round-trip min/avg/max/stddev = 56.421/56.421/56.421/0.000 ms
 
 ## 3.3 gNOI System Traceroute
 
-Traceroute RPC can be used to trace the path to the destination using ICMP messages similar to a standard traceroute, but executed remotely from a gNOI client.
+The Traceroute RPC traces the path to the destination using ICMP messages, similar to a standard traceroute, but executed remotely from a gNOI client.
 
 Let's trace the path for `leaf2` loopback IP.
 
@@ -61,11 +61,10 @@ traceroute to 2.2.2.2 (2.2.2.2), 30 max hops, 56 byte packets
 
 ## 3.4 gNOI File Get
 
-gNOI File service provides RPCs that are used to transfer files between the client and the router.
+The gNOI File service provides RPCs to transfer files between the client and the router.
 
-One of the use cases for gNOI File service is to perform configuration backups.
-
-We will be using gNOI File Get RPC to do a remote configuration backup of leaf1.
+One of the use cases for gNOI File service is to perform configuration backups.  
+We will use the gNOI File Get RPC to perform a remote configuration backup from leaf1.
 
 First, let's verify the configuration file exists. We will use the gNOI File Stat RPC for this purpose.
 
@@ -76,11 +75,11 @@ gnoic -a leaf1:57401 -u gnoic1 -p gnoic1 --insecure file stat --path /etc/opt/sr
 Expected output:
 
 ```bash
-+-------------+------------------------------+---------------------------+------------+------------+--------+
-| Target Name |             Path             |       LastModified        |    Perm    |   Umask    |  Size  |
-+-------------+------------------------------+---------------------------+------------+------------+--------+
-| leaf1:57400 | /etc/opt/srlinux/config.json | 2025-01-31T17:40:01+02:00 | -rw-rw-r-- | -----w--w- | 102052 |
-+-------------+------------------------------+---------------------------+------------+------------+--------+
++-------------+------------------------------+----------------------+------------+------------+--------+
+| Target Name |             Path             |     LastModified     |    Perm    |   Umask    |  Size  |
++-------------+------------------------------+----------------------+------------+------------+--------+
+| leaf1:57401 | /etc/opt/srlinux/config.json | 2026-10-19T13:18:43Z | -rw-rw-r-- | -----w--w- | 126736 |
++-------------+------------------------------+----------------------+------------+------------+--------+
 ```
 
 The config file is present in the path. Now let's transfer the file to our host VM. We will use gNOI File Get RPC.
@@ -92,24 +91,24 @@ gnoic -a leaf1:57401 -u gnoic1 -p gnoic1 --insecure file get --file /etc/opt/srl
 Expected output:
 
 ```bash
-INFO[0000] "leaf1:57400" received 64000 bytes           
-INFO[0000] "leaf1:57400" received 38052 bytes           
-INFO[0000] "leaf1:57400" file "/etc/opt/srlinux/config.json" saved 
+INFO[0000] "leaf1:57401" received 64000 bytes           
+INFO[0000] "leaf1:57401" received 38052 bytes           
+INFO[0000] "leaf1:57401" file "/etc/opt/srlinux/config.json" saved 
 ```
 
-Verify that the file is now present locally on your host.
+Verify that the file is now present locally on your host:
 
 ```bash
 ls -lrt etc/opt/srlinux/config.json
 ```
 
-This action can be put inside a cron job and scheduled for daily backups.
+You can put this command in a cronjob for daily backups, just as one example for using gNOI File Get.
 
 ## 3.5 gNOI File Put
 
-gNOI File Put RPC can be used to transfer files to the router.
+The gNOI File Put RPC transfers files to the router.
 
-A configuration backup on a remote server can be transferred to an SR Linux device using gNOI File Put RPC.
+You can use it to transfer a configuration backup from a remote server to an SR Linux device.
 
 To test this, create a file on the host VM.
 
@@ -139,27 +138,29 @@ gnoic -a leaf1:57401 -u gnoic1 -p gnoic1 --insecure file stat --path /var/log/sr
 Expected output:
 
 ```bash
-+-------------+--------------------------------+---------------------------+------------+------------+------+
-| Target Name |              Path              |       LastModified        |    Perm    |   Umask    | Size |
-+-------------+--------------------------------+---------------------------+------------+------------+------+
-| leaf1:57401 | /var/log/srlinux/my-config.bkp | 2025-05-19T03:30:38-04:00 | -rwxrwxrwx | -----w--w- | 16   |
-+-------------+--------------------------------+---------------------------+------------+------------+------+
++-------------+--------------------------------+----------------------+------------+------------+------+
+| Target Name |              Path              |     LastModified     |    Perm    |   Umask    | Size |
++-------------+--------------------------------+----------------------+------------+------------+------+
+| leaf1:57401 | /var/log/srlinux/my-config.bkp | 2026-11-10T12:34:40Z | -rwxrwxrwx | -----w--w- | 16   |
++-------------+--------------------------------+----------------------+------------+------------+------+
 ```
 
-Now that the config backup is transferred, the regular CLI process can be followed to restore this config. This is outside the scope of this activity.
+We can use the 
+
+Now that the config backup is transferred, you can follow the regular CLI process to restore it. That is outside the scope of this activity.
 
 ## 3.6 gNOI Healthz
 
-The Healthz RPC can be used to verify the health of the router components like line cards, fan trays, etc.
+The Healthz RPC verifies the health of router components such as line cards and fan trays.
 
-Along with checking the health of the components, the RPC also generates a tech support file that can be used to troubleshoot in case the part is not healthy.
+Besides checking the health of the components, the RPC also generates a tech support file you can use for troubleshooting if a part is not healthy.
 
 ```bash
 gnoic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure healthz check --path /platform/fan-tray[id=1]
 ```
 
 > [!NOTE]
-> Wait for a few seconds for the output as the system will be generating a tech-support file.
+> Wait a few seconds for the output, because the system is generating a Tech Support file before it can display the output.
 
 Expected output:
 
@@ -167,11 +168,11 @@ Expected output:
 +-------------+---------------------+-------------------------+--------------------+-----------------------------------------+---------------------+---------------+
 | Target Name |         ID          |          Path           |       Status       |               Created At                |     Artifact ID     | Artifact Type |
 +-------------+---------------------+-------------------------+--------------------+-----------------------------------------+---------------------+---------------+
-| leaf1:57401 | 1749085078899992055 | platform/fan-tray[id=1] | STATUS_UNSPECIFIED | 2025-05-19 07:41:45.816390245 +0000 UTC | 1749085078894083190 | file          |
+| leaf1:57401 | 2316871566607349118 | platform/fan-tray[id=1] | STATUS_UNSPECIFIED | 2026-11-10 12:37:38.395522515 +0000 UTC | 2316871566596121938 | file          |
 +-------------+---------------------+-------------------------+--------------------+-----------------------------------------+---------------------+---------------+
 ```
 
-As this is a containerlab node, the health status is Unspecified.
+As this is a containerised SR Linux node, without real hardware, the health status of the fan tray is returned as Unspecified.
 
 Using the returned artifact ID, you could now fetch the generated tech-support file using the following command:
 
@@ -182,15 +183,15 @@ gnoic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure healthz artifact --id 174
 > [!NOTE]
 > The automated tech-support file generation and retrieval is a valid use-case. The analysis of the tech-suport file can only be done by the Nokia support organization. We cannot do anything with the retrieved tech-support file in this workshop. 
 
-## 3.7 gNOI Automation Using Ansible (Optional)
+## 3.7 gNOI Automation Using Ansible (Optional Task)
 
-Ansible modules can be used to automate gNOI or any other gRPC services.
+You can use Ansible to automate gNOI or any other gRPC service operations.
 
 Let's assume we want to check the reachability of multiple IPs from multiple switches in our sample topology. This can be automated using Ansible.
 
 For our topology, we want to ping some IPs on `leaf2` from both `leaf1` and `spine`. We will also use a 3rd unknown IP to trigger a failure warning.
 
-Create Ansible inventory file on your VM:
+Create an Ansible inventory file on your VM:
 
 ```bash
 cat << EOF >> ping-inventory.yml
@@ -328,18 +329,20 @@ spine                      : ok=3    changed=0    unreachable=0    failed=1    s
 ```
 
 > [!NOTE]
-> This playbook uses Ansible's ansible.builtin.shell module to call gNOIc directly. Ansible's role here is orchestration - looping over hosts and targets, capturing output, and reporting pass/fail - while gNOIc performs the actual gNOI RPC call.
+> This playbook uses Ansible's ansible.builtin.shell module to call gNOIc directly. Ansible's role here is orchestration (looping over hosts and targets, capturing output and reporting pass/fail), while gNOIc performs the actual gNOI RPC call.
 
 ## 3.8 Software Upgrade Using gNOI
 
-This section is **theory only** as these RPCs cannot be implemented on a node in Containerlab.
+> [!IMPORTANT]
+> This section is **theory only**, as these RPCs are not implemented on the containerised SR Linux simulator.
+> Feel free to read this through to learn about using gNOI for software upgrades, or for later reference.
 
-The following commands can be used to automate software upgrade using gNOI RPCs.
+You can automate a software upgrade with the following gNOI RPCs.
 
 To verify the current software version on the device:
 
 ```bash
-gnoic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure os verify
+gnoic -a HW-leaf1:57401 -u admin -p NokiaSrl1! --insecure os verify
 ```
 
 Expected output:
@@ -348,14 +351,14 @@ Expected output:
 +-----------------------+-----------+---------------------+
 |      Target Name      |  Version  | Activation Fail Msg |
 +-----------------------+-----------+---------------------+
-|      leaf1:57401      | 23.7.2-84 |                     |
+|      HW-leaf1:57401   | 26.7.1    |                     |
 +-----------------------+-----------+---------------------+
 ```
 
 To transfer a software image file to the device:
 
 ```bash
-gnoic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure os install --version srlinux_23.10.1-218 --pkg ../23.10/srlinux-23.10.1-218.bin
+gnoic -a HW-leaf1:57401 -u admin -p NokiaSrl1! --insecure os install --version srlinux_26.10.1 --pkg ../26.10/srlinux-26.10.1.bin
 ```
 
 In these commands, `version` refers to the software version of the image being transferred and `pkg` refers to the location of the image file on the host VM.
@@ -363,31 +366,31 @@ In these commands, `version` refers to the software version of the image being t
 Expected output:
 
 ```bash
-INFO[0000] target "leaf1:57401": starting Install stream 
-INFO[0000] target "leaf1:57401": TransferProgress bytes_received:5242880 
-INFO[0000] target "leaf1:57401": TransferProgress bytes_received:10485760 
-INFO[0000] target "leaf1:57401": TransferProgress bytes_received:15728640 
+INFO[0000] target "HW-leaf1:57401": starting Install stream 
+INFO[0000] target "HW-leaf1:57401": TransferProgress bytes_received:5242880 
+INFO[0000] target "HW-leaf1:57401": TransferProgress bytes_received:10485760 
+INFO[0000] target "HW-leaf1:57401": TransferProgress bytes_received:15728640 
 ...
-INFO[0029] target "leaf1:57401": TransferProgress bytes_received:1179648000 
-INFO[0029] target "leaf1:57401": TransferProgress bytes_received:1184890880 
-INFO[0029] target "leaf1:57401": TransferProgress bytes_received:1190133760 
-INFO[0030] target "leaf1:57401": sending TransferEnd 
-INFO[0030] target "leaf1:57401": TransferProgress bytes_received:1195376640 
-INFO[0030] target "leaf1:57401": TransferContent done... 
+INFO[0029] target "HW-leaf1:57401": TransferProgress bytes_received:1179648000 
+INFO[0029] target "HW-leaf1:57401": TransferProgress bytes_received:1184890880 
+INFO[0029] target "HW-leaf1:57401": TransferProgress bytes_received:1190133760 
+INFO[0030] target "HW-leaf1:57401": sending TransferEnd 
+INFO[0030] target "HW-leaf1:57401": TransferProgress bytes_received:1195376640 
+INFO[0030] target "HW-leaf1:57401": TransferContent done... 
 ```
 
 To activate a software image on the device:
 
 ```bash
-gnoic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure os activate --version 23.10.1-218
+gnoic -a HW-leaf1:57401 -u admin -p NokiaSrl1! --insecure os activate --version 26.10.1
 ```
 
 Expected output:
 
 ```bash
-INFO[0005] target "leaf1:57401" activate response "activate_ok:{}" 
+INFO[0005] target "HW-leaf1:57401" activate response "activate_ok:{}" 
 ```
 
-Then verify the current software version using the `os verify` RPC used above.
+Then check the software version again with the `os verify` RPC used above.
 
 ## Next Section: [gNSI Service](/gnsi/README.md)
