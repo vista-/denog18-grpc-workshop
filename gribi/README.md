@@ -40,7 +40,7 @@ The lab is deployed with all required configuration.
 
 ### 5.1.3 gNOI Traceroute
 
-Find the path taken from `leaf1` to reach `2.2.2.2` on `leaf2`. To do this, we will perform a traceroute using the gNOI System RPC.
+Find the path taken from `leaf1` to reach `2.2.2.2` on `leaf2`. To do this, we will perform a traceroute using the **gNOI System Traceroute** RPC.
 
 ```bash
 gnoic -a leaf1:57401 -u gnoic1 -p gnoic1 --insecure system traceroute --destination 2.2.2.2 --ns default --wait 1s
@@ -104,8 +104,8 @@ The election ID is related to the redundancy mode mentioned earlier, and is out 
 
 ### 5.1.4 Verify entries in the route table with gNMI Get
 
-Before we push this route, let's verify the route table entries on `leaf1` using gNMI.  
-Since the output would be normally quite detailed, we limit how deep gNMI will retrieve the information to 2 containers deep.  
+Before we push this route, let's verify the route table entries on `leaf1` using **gNMI Get**.  
+Since the output would be normally quite detailed, we limit how deep **gNMI Get** will retrieve the information to 2 containers deep.  
 Additionally, we will use grep to filter the long output, so we only see the prefixes and their route-type, and whether they are active or not.
 
 ```bash
@@ -143,7 +143,7 @@ Before we push the route, let's get the currently installed gRIBI routes.
 
 ### 5.1.5 gRIBI Get
 
-The **gRIBI Get RPC** can be used to retrieve any currently installed _gRIBI routes_ from the switch. The RPC requires two arguments: the network-instance and the address family table to look up.
+The **gRIBI Get** RPC can be used to retrieve any currently installed _gRIBI routes_ from the switch. The RPC requires two arguments: the network-instance and the address family table to look up.
 
 ```bash
 gribic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --ns default --aft ipv4
@@ -161,13 +161,13 @@ There are no gRIBI routes installed yet.
 
 ### 5.1.6 gRIBI Modify
 
-Now, let's push the gRIBI route using the **gRIBI Modify RPC**. The route payload shown above is saved in a file [grib-input.yml](grib-input.yml).
+Now, let's push the gRIBI route using the **gRIBI Modify** RPC. The route payload shown above is saved in a file [grib-input.yml](grib-input.yml).
 
 ```bash
 gribic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure modify --input-file grib-input.yml
 ```
 
-Please note that the FIB programming might take a moment after the gRIBI Modify request goes through.
+Please note that the FIB programming might take a moment after the **gRIBI Modify** request goes through.
 
 Expected output:
 
@@ -257,7 +257,7 @@ The operation is successful. Let's check out the result of our handiwork!
 
 ### 5.1.7 Verify installed gRIBI IPv4 routes using gRIBI Get
 
-Using gRIBI Get, let's check out the gRIBI-installed routes once again in the default network-instance: 
+Using **gRIBI Get**, let's check out the gRIBI-installed routes once again in the default network-instance: 
 
 ```bash
 gribic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --ns default --aft ipv4
@@ -288,7 +288,7 @@ The route reports as successfully installed and programmed in the RIB and the FI
 
 ### 5.1.8 Verify installed gRIBI next-hop groups using gRIBI Get
 
-gRIBI GET can be used to also look up the installed next-hop groups (`nhg`):
+**gRIBI Get** can be used to also look up the installed next-hop groups (`nhg`):
 
 ```bash
 gribic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --ns default --aft nhg
@@ -317,7 +317,7 @@ entry: {
 
 ### 5.1.9 Verify installed gRIBI next-hops using gRIBI Get
 
-Now, we are going to query the next-hops (`nh`) address family table using gRIBI Get:
+Now, we are going to query the next-hops (`nh`) address family table using **gRIBI Get**:
 
 ```bash
 gribic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --ns default --aft nh
@@ -347,7 +347,7 @@ entry: {
 
 ### 5.1.10 Verify routes in the routing-table with gNMI Get
 
-Now let's verify the route table on `leaf1` and confirm that there is a route for `2.2.2.2/32`, which is the loopback IP on leaf2.
+Now let's verify the route table on `leaf1` and confirm that there is a route for `2.2.2.2/32`, which is the loopback IP on `leaf2`.
 
 ```bash
 gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --path "/network-instance[name=default]/route-table/ipv4-unicast" --encoding json_ietf --depth 2 | grep -E "prefix|active|type"

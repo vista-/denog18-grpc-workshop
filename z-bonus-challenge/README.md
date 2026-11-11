@@ -5,8 +5,8 @@ Since the gRIBI routes are flushed at the end of the task, it is not necessary t
 
 ## Bonus 1: Securing gNMI Service
 
-By default, the switches allow gNMI Get, Set and Subscribe RPCs to be performed.  
-When setting up an external monitoring system, the user used for the gNMI-based streaming telemetry has no business being able to run Set RPCs, that is, to modify the switch configuration.
+By default, the switches allow the **gNMI Get**, **gNMI Set** and **gNMI Subscribe** RPCs to be performed.  
+When setting up an external monitoring system, the user used for the gNMI-based streaming telemetry has no business being able to run **gNMI Set** RPCs, that is, to modify the switch configuration.
 
 To secure our telemetry system, we should set up a separate user with restricted access!
 
@@ -24,26 +24,26 @@ set / system configuration role gnmi-clients rule / action write
 commit now
 ```
 
-Your task is now to create a gNSI Authz policy to allow gNMI Get, Subscribe and deny gNMI Set to this user and role.
+Your task is now to create a gNSI Authz policy to allow **gNMI Get**, **gNMI Subscribe** and deny **gNMI Set** to this user and role.
 
 > [!TIP]
 > Check the [gNSI](/gnsi/README.md) section if you need a hint here.
 
-Here are the Get, Set and Subscribe commands to run from the VM in order to help you test your policy:
+Here are the **gNMI Get**, **gNMI Set** and **gNMI Subscribe** commands to run from the VM in order to help you test your policy:
 
-gNMI Get:
+**gNMI Get**:
 
 ```bash
 gnmic -a leaf1 -u grclient1 -p grclient1 --skip-verify get --path /interface[name=ethernet-1/10]/mtu --encoding json_ietf
 ```
 
-gNMI Set:
+**gNMI Set**:
 
 ```bash
 gnmic -a leaf1 -u grclient1 -p grclient1 --skip-verify set --update /interface[name=ethernet-1/10]/mtu:::json:::4000
 ```
 
-gNMI Subscribe:
+**gNMI Subscribe**:
 
 ```bash
 gnmic -a leaf1 -u grclient1 -p grclient1 --skip-verify sub --path /interface[name=ethernet-1/1]/statistics/out-packets --mode once
@@ -101,7 +101,7 @@ Here's the command to push this policy:
 gnsic -a leaf1 -u admin -p NokiaSrl1! --skip-verify authz rotate --policy "{\"name\":\"denog18-gnmi\",\"allow_rules\":[{\"name\":\"gnmi-access\",\"source\":{\"principals\":[\"grclient1\",\"gnmi-clients\"]},\"request\":{\"paths\":[\"/gnmi.gNMI/Get\",\"/gnmi.gNMI/Subscribe\"]}}],\"deny_rules\":[{\"name\":\"gnmi-access\",\"source\":{\"principals\":[\"grclient1\",\"gnmi-clients\"]},\"request\":{\"paths\":[\"/gnmi.gNMI/Set\"]}}]}"
 ```
 
-Verify the new policy is installed using gNMI:
+Verify the new policy is installed using **gNMI Get**:
 
 ```bash
 gnmic -a leaf1 -u admin -p NokiaSrl1! --skip-verify get --path /system/aaa/authorization/authz-policy --encoding json_ietf
@@ -110,7 +110,7 @@ gnmic -a leaf1 -u admin -p NokiaSrl1! --skip-verify get --path /system/aaa/autho
 > [!NOTE]
 > As gNSIc is in beta, you may have to run the policy install command multiple times until you see the policy in the verification output above.
 
-After the policy is installed, try gNMI Set:
+After the policy is installed, try **gNMI Set**:
 
 ```bash
 gnmic -a leaf1 -u grclient1 -p grclient1 --skip-verify set --update /interface[name=ethernet-1/10]/mtu:::json:::4000
@@ -127,7 +127,7 @@ Error: one or more requests failed
 
 Install a default route using gRIBI on `leaf1` with next-hop pointing to the direct interface to `leaf2`.
 
-Get the list of current routes using gNMI Get:
+Get the list of current routes using **gNMI Get**:
 
 ```bash
 gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --path "/network-instance[name=default]/route-table/ipv4-unicast" --encoding json_ietf --depth 2 | grep -E "prefix|active|type"
@@ -176,7 +176,7 @@ Copy the payload to a file named `default-route.yml` and use gRIBIc to inject th
 gribic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure modify --input-file default-route.yml
 ```
 
-Verify using gNMI Get that the default route is installed.
+Verify using **gNMI Get** that the default route is installed.
 
 ```bash
 gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --path "/network-instance[name=default]/route-table/ipv4-unicast" --encoding json_ietf --depth 2 | grep -E "prefix|active|type"

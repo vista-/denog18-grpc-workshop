@@ -18,16 +18,31 @@ In the previous section on gNOI, we used a user `gnoic1` to get the configuratio
 
 If an unauthorized third party gets access to the host VM, they can use the same user to push corrupted files or images to the switch.
 
-We will be using gNSI to configure an authorization policy on leaf1 that will prevent the user called `gnoic1` (used for config file backup) from writing files on the switch.
+We will be using gNSI to configure an authorization policy on `leaf1` that will prevent the user called `gnoic1` (used for config file backup) from writing files on the switch.
 
-Let's start by verifying that the user `gnoic1` has access to list, get and put files on leaf1.
+Let's start by verifying that the user `gnoic1` has access to list, get and put files on `leaf1`.
 
 We will switch to secure gRPC communication for this section, using the TLS-secured gRPC server running on port 57400, because gNSI policies apply to secure requests only.  
-Due to not having a valid signed certificate, we will need to add `--skip-verify` to our `gnoic` and `gnsic` commands.
 
-### 4.1.1 List File
+### 4.1.1 First File Stat attempt
 
-Let's first perform a simple gNOI File Stat on `/etc/opt/srlinux/config.json` to test the TLS-secured gRPC server on `leaf1`.
+Let's first perform a simple **gNOI File Stat** on `/etc/opt/srlinux/config.json` to test the TLS-secured gRPC server on `leaf1`. The gRPC service on the default port, 57400, has TLS enabled. 
+
+```bash
+gnoic -a leaf1 -u gnoic1 -p gnoic1 file stat --path /etc/opt/srlinux/config.json
+```
+
+Expected output:
+```bash
+ERRO[0000] "leaf1:57400" File Stat failed: "leaf1:57400" file "/etc/opt/srlinux/config.json" stat err: rpc error: code = Unavailable desc = connection error: desc = "transport: authentication handshake failed: tls: failed to verify certificate: x509: certificate signed by unknown authority"
++-------------+------+--------------+------+-------+------+
+| Target Name | Path | LastModified | Perm | Umask | Size |
++-------------+------+--------------+------+-------+------+
++-------------+------+--------------+------+-------+------+
+Error: there was 1 error(s)
+```
+
+As the certificate is self-signed, it is not recognized by our host VM, and rejected as it is unable to be validated. We need to add `--skip-verify` to our `gnoic` and `gnsic` commands until we install a valid certificate.
 
 ```bash
 gnoic -a leaf1 -u gnoic1 -p gnoic1 --skip-verify file stat --path /etc/opt/srlinux/config.json
@@ -43,13 +58,15 @@ Expected output:
 +-------------+------------------------------+---------------------------+------------+------------+--------+
 ```
 
-### 4.1.2 Get File
+### 4.1.2 First File Get attempt
+
+We can test whether the **gNOI File Get** call works by trying to grab the SR Linux configuration located at `/etc/opt/srlinux/config.json`.
 
 ```bash
 gnoic -a leaf1 -u gnoic1 -p gnoic1 --skip-verify file get --file /etc/opt/srlinux/config.json --dst .
 ```
 
-Expected output:
+Expected output **File Get**:
 
 ```bash
 INFO[0000] "leaf1:57400" received 64000 bytes           
@@ -57,7 +74,9 @@ INFO[0000] "leaf1:57400" received 62835 bytes
 INFO[0000] "leaf1:57400" file "/etc/opt/srlinux/config.json" saved
 ```
 
-### 4.1.3 Put File
+### 4.1.3 Example Put File attempt
+
+Now to check whether the **gNOI File Put** works, and whether we can upload images to our switch.
 
 Create a file on your host VM:
 
@@ -65,20 +84,20 @@ Create a file on your host VM:
 echo "this is a corrupted image file" > corrupt.img
 ```
 
-Now transfer this file to the switch.
+Now transfer this file to the switch using **gNOI File Put** to simulate us uploading something not very desirable to our switch.
 
 ```bash
 gnoic -a leaf1 -u gnoic1 -p gnoic1 --skip-verify file put --file corrupt.img --dst /var/log/srlinux/corrupt.img
 ```
 
-Expected output for Put file:
+Expected output for **File Put**:
 
 ```bash
 INFO[0000] "leaf1:57400" sending file="corrupt.img" hash 
 INFO[0000] "leaf1:57400" file "corrupt.img" written successfully 
 ```
 
-Verify on leaf1 that the transferred file exists.
+Verify on `leaf1` that the transferred file exists using **gNOI File Stat**.
 
 ```bash
 gnoic -a leaf1 -u gnoic1 -p gnoic1 --skip-verify file stat --path /var/log/srlinux/corrupt.img
@@ -96,7 +115,7 @@ Expected output:
 
 ### 4.1.4 Remove the Transferred File
 
-Delete the transferred file using the gNOI File Remove RPC.
+Delete the transferred file using **gNOI File Remove**:
 
 ```bash
 gnoic -a leaf1 -u gnoic1 -p gnoic1 --skip-verify file remove --path /var/log/srlinux/corrupt.img
@@ -108,11 +127,11 @@ Expected output:
 INFO[0000] "leaf1:57400" file "/var/log/srlinux/corrupt.img" removed successfully 
 ```
 
-### 4.1.5 Push the Authz Policy
+### 4.1.5 gNSI Authz Rotate
 
-At this point, we verified that user `gnoic1` has permission to transfer a file over to leaf1.
+At this point, we verified that user `gnoic1` has permission to transfer a file over to `leaf1`.
 
-Let's block that by pushing an authorization policy with the gNSI Authz service!
+Let's block that by pushing an authorization policy with the **gNSI Authz Rotate** RPC!
 
 This is the Authz policy payload that we will push. It gives the user `gnoic1` access to gNOI File Get and File Stat RPCs, and denies the gNOI File Put RPC.
 
@@ -175,7 +194,7 @@ INFO[0001] "leaf1:57400": sending finalize request
 INFO[0001] "leaf1:57400": closing stream 
 ```
 
-Verify that the Authz policy was applied on the system. We will use gNMI Get RPC for this purpose.
+Verify that the Authz policy was applied on the system using a simple **gNMI Get**:
 
 ```bash
 gnmic -a leaf1 -u admin -p NokiaSrl1! --skip-verify get --path /system/aaa/authorization/authz-policy --encoding json_ietf
@@ -266,11 +285,11 @@ Expected output:
 > [!WARNING]
 > Because the gNSIc client is in beta, it might not push the policy on the first attempt. If gNMI Get is still showing the default policy, repeat the gNSIc Authz command to push the policy again.
 
-Now test the gNOI List, Get and Put file operations again using the `gnoic1` user!
+Now test the **gNOI List**, **gNOI Get** and **gNOI Put** file operations again using the `gnoic1` user!
 
 Refer to the steps in [Section 4.1](#41-gnsi-authz).
 
-The Put operation is denied by the Authz Policy, with the following output.
+The **gNOI Put** operation is denied by the Authz Policy, with the following output.
 
 ```bash
 INFO[0000] "leaf1:57400" sending file="corrupt.img" hash 
@@ -289,11 +308,15 @@ tools system aaa authorization authz-policy remove
 ## 4.2 TLS Certificate Management
 
 Another gNSI use-case is configuring and managing TLS profiles and certificates on the switch.  
-The gNSI **Certz RPCs** handle this.
+The **gNSI Certz** RPCs handle this.
 
 Assuming our starting point is an insecure connection, we will build a TLS profile with certificates and use it on a gRPC server to make our connection secure.
 
-### 4.2.1 Create a TLS Profile
+### 4.2.1 gNSI Certz AddProfile
+
+We can create a new certificate profile using the **gNSI Certz AddProfile** RPC.
+
+This profile will be used to attach the TLS certificate to the gRPC server.
 
 ```bash
 gnsic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure certz add-profile --id Corp-Sec-A
@@ -305,7 +328,9 @@ Expected output:
 INFO[0000] leaf1:57401: added profile "Corp-Sec-A"
 ```
 
-### 4.2.2 Verify TLS Profiles
+### 4.2.2 gNSI Certz GetProfileList
+
+The **gNSI Certz GetProfileList** RPC can be used to list available Certz profiles.
 
 ```bash
 gnsic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure certz get-profile-list
@@ -323,7 +348,7 @@ Expected output:
 ```
 
 
-### 4.2.3 CanGenerateCSR
+### 4.2.3 gNSI Certz CanGenerateCSR
 
 On your host VM, run:
 
@@ -352,7 +377,8 @@ Certificate:
                 Public-Key: (2048 bit)                  <------
 ```
 
-Next, check if the switch can generate a Certificate Signing Request (CSR) that fits this requirement. If it can, we avoid generating certificates (and more importantly, private keys) outside the switch and transferring them over. The switch-generated CSR's common name (CN) will be `leaf1` and we will use the crypto suite `CSRSUITE_X509_KEY_TYPE_RSA_2048_SIGNATURE_ALGORITHM_SHA_2_256`.
+Next, we will check if the switch can generate a Certificate Signing Request (CSR) that fits this requirement using the **gNSI CanGenCSR** RPC.  
+If it can, we avoid generating certificates (and more importantly, private keys) outside the switch and transferring them over. The switch-generated CSR's common name (CN) will be `leaf1` and we will use the crypto suite `CSRSUITE_X509_KEY_TYPE_RSA_2048_SIGNATURE_ALGORITHM_SHA_2_256`.
 
 ```bash
 gnsic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure certz can-gen-csr --cn leaf1 --csr-suite CSRSUITE_X509_KEY_TYPE_RSA_2048_SIGNATURE_ALGORITHM_SHA_2_256
@@ -370,10 +396,10 @@ Expected output:
 
 We confirmed that the switch can generate a CSR.
 
-### 4.2.4 Generate CSR
+### 4.2.4 gNSI Certz Rotate
 
 Next, we ask the switch to generate a CSR, get it signed and install it back on the switch, all with a single `gnsic` command.  
-This uses the Certz Rotate RPC.
+This uses the **gNSI Certz Rotate** RPC.
 
 We will also add the `leaf1` DNS hostname and management IP into the SAN field of the certificate.
 
@@ -406,7 +432,7 @@ The output above is shortened to show only the relevant parts. We can see the CS
 
 ### 4.2.5 TLS Profile Verification
 
-Verify that the new TLS profile is configured with these signed certificates. We will use gNMI Get RPC for this purpose.
+Verify that the new TLS profile is configured with these signed certificates. We will use **gNMI Get** for this purpose.
 
 ```bash
 gnmic -a leaf1 -u admin -p NokiaSrl1! --skip-verify get --path /system/tls/profile[name=Corp-Sec-A] --encoding json_ietf
@@ -458,7 +484,7 @@ Expected output:
 
 The new TLS profile is now ready to be used. Let's update the secure gRPC server `mgmt` TLS profile to the new profile.
 
-We will use gNMI Set RPC for this purpose.
+We will use **gNMI Set** for this purpose.
 
 ```bash
 gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure set --update-path /system/grpc-server[name=mgmt]/tls-profile --update-value Corp-Sec-A
@@ -482,7 +508,7 @@ Expected output:
 
 ### 4.2.7 gNMI Get Using Secure TLS
 
-To verify that the new TLS profile is working, let's get the management port statistics using gNMI Get RPC using a secure TLS connection - that means no `--insecure` or `--skip-verify` here!  
+To verify that the new TLS profile is working, let's get the management port statistics using **gNMI Get** using a secure TLS connection - that means no `--insecure` or `--skip-verify` here!  
 We will have to supply the TLS CA as an additional parameter, since our temporary Containerlab certificate is not in the system root certificate store.
 
 Because the SAN field had the IP address, we can both use `leaf1` and the IP address as a destination:

@@ -2,7 +2,7 @@
 
 ## 1.1 gNMI Capabilities
 
-Let's start by checking the gNMI capabilities of the SR Linux device with the gNMI Capabilities RPC.
+Let's start by checking the gNMI capabilities of the SR Linux device with the **gNMI Capabilities** RPC.
 
 It also confirms that gNMI is enabled on the device.
 
@@ -29,16 +29,16 @@ supported models:
 
 ## 1.2 gNMI Get
 
-The gNMI Get RPC retrieves the running configuration or operational state of the device.
+The **gNMI Get** RPC retrieves the running configuration or operational state of the device.
 
 The lab startup configuration deployed by Containerlab already includes all interfaces.  
-Let's verify the configuration of the interface on leaf1 facing spine, `ethernet-1/1`!
+Let's verify the configuration of the interface on `leaf1` facing `spine`, `ethernet-1/1`!
 
 To find the gNMI XPath of an object, use the [Nokia YANG Browser](https://yangbrowser.nokia.com/srlinux), where you can search for any configuration or state object that you might be looking for.
 
 You can also get the gNMI XPath of an object from the SR Linux CLI. 
 
-First, navigate to the object's context in the CLI. For example, on leaf1:
+First, navigate to the object's context in the CLI. For example, on `leaf1`:
 
 ```bash
 interface ethernet-1/1
@@ -58,7 +58,7 @@ Expected output:
 
 The XPath expression here consists of the root (`/`), a single path element (`interface`) along with a key and value to select a specific element from a list (`[name=ethernet-1/1]`).  
 
-Now that we have the path, let's retrieve the configuration of this interface using gNMI Get using `gnmic`.
+Now that we have the path, let's retrieve the configuration of this interface using **gNMI Get** using `gnmic`.
 
 ```bash
 gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure --encoding json_ietf get --path /interface[name=ethernet-1/1] --type config
@@ -110,7 +110,7 @@ Expected output:
 
 ### 1.2.1 gNMI Get for State
 
-Next, let's retrieve only the operational state of the client-facing interface, `ethernet-1/10`, using gNMI Get. This comes from the state datastore, and thus we need to use `--type state`.
+Next, let's retrieve only the operational state of the client-facing interface, `ethernet-1/10`, using **gNMI Get**. This comes from the state datastore, and thus we need to use `--type state`.
 
 When using `gnmic`, the default value of `--type` is `state`, and thus can be omitted from the CLI flags.
 
@@ -142,7 +142,7 @@ Expected output:
 
 ## 1.3 gNMI Set
 
-The gNMI Set RPC makes configuration changes on the device.
+The **gNMI Set** RPC makes configuration changes on the device.
 
 There are several ways to update the configuration, and we will explore a few of them in this workshop.
 
@@ -150,7 +150,7 @@ There are several ways to update the configuration, and we will explore a few of
 
 The `Update` option configures one leaf at a time.
 
-We will start by configuring the interface MTU on the client-facing `ethernet-1/10` interface on leaf1.
+We will start by configuring the interface MTU on the client-facing `ethernet-1/10` interface on `leaf1`.
 
 Before we set the MTU, verify the current MTU from the state datastore using gNMI.
 
@@ -185,7 +185,7 @@ Expected output:
 }
 ```
 
-A gNMI Set request with `--update` acts as both a configuration modification and commit at the same time - it is not a good way to bulk change the configuration. 
+A **gNMI Set** request with `--update` acts as both a configuration modification and commit at the same time - it is not a good way to bulk change the configuration. 
 
 Verify the new MTU value using the Get request used above - it should report 4000 now.
 
@@ -193,7 +193,7 @@ Verify the new MTU value using the Get request used above - it should report 400
 
 Another way to specify a path and value is using `--update-path` and `--update-value` options. The type is deduced based on the `--encoding` option.
 
-Modify the MTU of `ethernet-1/10` on leaf1 to 3600 using these options.
+Modify the MTU of `ethernet-1/10` on `leaf1` to 3600 using these options.
 
 ```bash
 gnmic -a leaf1 -u admin -p NokiaSrl1! --skip-verify set --update-path /interface[name=ethernet-1/10]/mtu --update-value 3600 --encoding json_ietf
@@ -207,17 +207,17 @@ To update multiple config objects at once, put the configuration in a file and s
 
 We will configure the `system0` loopback interface on all 3 devices using this method.
 
-|Device | System IP  |
-|-------|------------|
-| leaf1 | 1.1.1.1/32 |
-| leaf2 | 2.2.2.2/32 |
-| spine | 3.3.3.3/32 |
+| Device  | System IP  |
+|---------|------------|
+| `leaf1` | 1.1.1.1/32 |
+| `leaf2` | 2.2.2.2/32 |
+| `spine` | 3.3.3.3/32 |
 
 Prepared config files are located in your repo under [gnmi](../gnmi/) and are in `json` format.
 
 > [!NOTE]
 > If you are wondering how to prepare the configuration in `json` format:  
-> SR Linux CLI has an option to display the configuration in `json` format. After an interface is configured, run the command below to display the interface configuration in `json` format. This can be copied to a file and used in the gNMI Set request.
+> SR Linux CLI has an option to display the configuration in `json` format. After an interface is configured, run the command below to display the interface configuration in `json` format. This can be copied to a file and used in the **gNMI Set** request.
 >
 > ```bash
 > info interface ethernet-1/1 | as json
@@ -231,7 +231,7 @@ gnmic -a leaf2:57401 -u admin -p NokiaSrl1! --insecure set --update-path /interf
 gnmic -a spine:57401 -u admin -p NokiaSrl1! --insecure set --update-path /interface[name=system0] --update-file gnmi/spine-system.cfg --encoding json_ietf
 ```
 
-Expected output for leaf1:
+Expected output for `leaf1`:
 
 ```json
 {
@@ -247,7 +247,7 @@ Expected output for leaf1:
 }
 ```
 
-Verify the `system0` interface configuration using the Get RPC used earlier. You can also check the state of it and verify it's operational status.
+Verify the `system0` interface configuration using the **gNMI Get** RPC used earlier. You can also check the state of it and verify it's operational status.
 
 ```bash
 gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure --encoding json_ietf get --path /interface[name=system0] --type config
@@ -261,9 +261,9 @@ To replace or overwrite an entire section of the config, specify the new config 
 
 This is equivalent to deleting existing paths under the specified path, and configuring new ones, in one gNMI operation and commit.
 
-To try this, we will replace the SNMP section with a new config that has a different community value. If we were to just send this configuration via the gNMI Update RPC, the two community values would be both configured at the same time.
+To try this, we will replace the SNMP section with a new config that has a different community string value. If we were to just send this configuration via plain **gNMI Set**, the two community values would be both configured at the same time.
 
-Verify the current SNMP configuration on leaf1:
+Verify the current SNMP configuration on `leaf1`:
 
 ```bash
 gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --path /system/snmp --encoding json_ietf --type config
@@ -368,7 +368,7 @@ Expected output:
 }
 ```
 
-Now verify the SNMP config using the gNMI Get method.
+Now verify the SNMP config using the **gNMI Get** method.
 
 ```bash
 gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --path /system/snmp --encoding json_ietf --type config
@@ -442,7 +442,7 @@ Expected output:
 }
 ```
 
-Verify the updated SNMP communities using Get RPC.
+Verify the updated SNMP communities using the **gNMI Get** RPC.
 
 ```bash
 gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --path /system/snmp --encoding json_ietf --type config
@@ -473,7 +473,7 @@ Commit confirmed is a handy CLI feature when making risky changes. With it, the 
 
 gNMIc (and gNMI by extension) supports this feature too.
 
-To try this, we will change the MTU value of `ethernet-1/10` on leaf1 from the current value of 3600 to 8000.
+To try this, we will change the MTU value of `ethernet-1/10` on `leaf1` from the current value of 3600 to 8000.
 
 Verify the current value using Get method:
 
@@ -576,7 +576,7 @@ The MTU change is now confirmed and will not get rolled back.
 
 Our last option with the Set method is to delete a configuration element.
 
-Let's delete the MTU from `ethernet-1/10` on leaf1 so it reverts to the default MTU value.
+Let's delete the MTU from `ethernet-1/10` on `leaf1` so it reverts to the default MTU value.
 
 ```bash
 gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure set --delete /interface[name=ethernet-1/10]/mtu
@@ -609,16 +609,17 @@ The easiest interactive tool to view this is the Nokia YANG Browser.
 
 ## 1.4 gNMI Subscribe
 
-Subscribe is the most commonly used gNMI RPC. It is what powers real-time streaming telemetry - and probably the first thing you thought of gRPC when you signed up for this workshop.
+**gNMI Subscribe** RPC is the most commonly used gNMI RPC. It is what powers real-time streaming telemetry - and probably the first thing you thought of gRPC when you signed up for this workshop.
+
+A **gNMI Subscribe** can be performed via `gnmic` using the `subscribe` or `sub` keyword.
 
 We will try 3 different telemetry options during this workshop.
 
 ### 1.4.1 Once
 
-Just like SNMP polling, you can poll a specific object over gNMI with the `ONCE` option of the Subscribe RPC.  
-The Subscribe RPC can be used with `gnmic` using the `subscribe` or `sub` keyword.
+Just like SNMP polling, you can poll a specific object over gNMI with the `ONCE` option of **gNMI Subscribe**.  
 
-Let's get the out packets of interface `ethernet-1/1` on leaf1 using this method.
+Let's get the output packet counter of interface `ethernet-1/1` on `leaf1` using this method.
 
 ```bash
 gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure sub --path /interface[name=ethernet-1/1]/statistics/out-packets --mode once
@@ -716,7 +717,7 @@ gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure sub --path /interface[nam
 You will notice that very little data is getting streamed streamed, because the counter value does not change often.  
 Another behaviour to take note of is that if you restart the streaming telemetry session, you will often get the same data back - this is so no matter when the subscription happens, even if no change has happened recently, the telemetry collector will also have the current state.
 
-Keep the streaming session going and open another window to leaf1. Start a ping from leaf1 to the spine interface with an interval of 1 second.
+Keep the streaming session going and open another window to `leaf1`. Start a ping from `leaf1` to the `spine`-facing interface with an interval of 1 second.
 
 ```bash
 ping 192.168.10.3 network-instance default -i 1
@@ -1104,7 +1105,7 @@ Expected output:
 
 What did we learn here?
 
-- gNMI Subscriptions (and Gets) work even on containers, and containers can contain further containers.
+- **gNMI Subscribe** (and **gNMI Get**) work even on containers, and containers can contain further containers.
 - Some paths of a subscription can be ON_CHANGE, and other SAMPLE at the same time.
 - Results can be partially streamed - if multiple ON_CHANGE leaf paths are in the same subscription, only results for changed paths are returned after the initial sync.
 

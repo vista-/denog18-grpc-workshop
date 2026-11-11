@@ -61,7 +61,7 @@ All interfaces were configured using SR Linux commands when the lab was deployed
 
 Let's start by checking this in the CLI.
 
-Log in to leaf1 and change to OC running mode using:
+Log in to `leaf1` and change to OC running mode using:
 
 ```bash
 enter oc
@@ -89,7 +89,7 @@ set / interfaces interface ethernet-1/1 subinterfaces subinterface 0 ipv6 addres
 set / interfaces interface ethernet-1/1 subinterfaces subinterface 0 ipv6 config enabled true
 ```
 
-Now let's retrieve this same configuration with a gNMI Get RPC.
+Now let's retrieve this same configuration with a **gNMI Get** RPC.
 
 ```bash
 gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --path openconfig:/interfaces/interface[name=ethernet-1/1] --encoding json_ietf --type config
@@ -196,7 +196,7 @@ Expected output:
 > The configuration here builds on top of the one we previously applied during the gNMI section of this workshop.  
 > If you have not applied the configuration from there yet, please do so before proceeding with this task.
 
-All the gNMI Set methods we tried previously with SR Linux models are also valid with OpenConfig models.
+All the **gNMI Set** methods we tried previously with SR Linux models are also valid with OpenConfig models.
 
 Due to time constraints, we will not repeat them here.
 
@@ -210,15 +210,15 @@ As part of our fabric deployment, we configure the following next:
 
 Not all objects for these configurations are supported in OpenConfig, so we will use native Nokia models to cover the gaps.
 
-We will use the gNMI Set RPC with the `--update-path` and `--update-file` options.
+We will use the **gNMI Set** RPC with the `--update-path` and `--update-file` options.
 
 OpenConfig configuration files for all 3 devices are in [oc](../configs/oc/).
 
 SR Linux configuration files are in [srl](../configs/srl/).
 
-Before we push the configuration, verify that BGP is not configured in the default network-instance using gNMI Get.
+Before we push the configuration, verify that BGP is not configured in the default network-instance using **gNMI Get**.
 
-For example, to check on leaf1:
+For example, to check on `leaf1`:
 
 ```bash
 gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --path openconfig:/network-instances/network-instance[name=*] --encoding json_ietf --type config
@@ -250,13 +250,13 @@ Expected output:
 }
 ```
 
-Run the Get RPC used above to verify that BGP and MAC-VRF are now configured.
+Run the **gNMI Get** RPC used above to verify that BGP and MAC-VRF are now configured.
 
 ```bash
 gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --path openconfig:/network-instances/network-instance[name=*] --encoding json_ietf --type config
 ```
 
-Complete the configuration on leaf2 and spine.
+Complete the configuration on `leaf2` and `spine`.
 
 ```bash
 gnmic -a leaf2:57401 -u admin -p NokiaSrl1! --insecure set --update-path openconfig:/ --update-file configs/oc/leaf2-oc.cfg --update-path srl_nokia:/ --update-file configs/srl/leaf2-srl.cfg --encoding json_ietf
@@ -266,9 +266,9 @@ gnmic -a spine:57401 -u admin -p NokiaSrl1! --insecure set --update-path opencon
 
 With the configuration that we pushed, the BGP neighbor sessions should come up and start advertising the routes.
 
-Let's verify this using gNMI Get.
+Let's verify this using **gNMI Get**.
 
-As an example, let's verify the status of BGP neighbor `2.2.2.2` on leaf1 using SR Linux model.
+As an example, let's verify the status of BGP neighbor `2.2.2.2` on `leaf1` using SR Linux model.
 
 > [!NOTE]
 > Wait for a minute for BGP to establish the sessions.
@@ -352,7 +352,7 @@ ping -c 3 172.16.10.60
 
 ## 2.4 gNMI Subscribe with OpenConfig
 
-gNMI Subscribe for OpenConfig Streaming Telemetry works the same way as with the SR Linux models.
+The **gNMI Subscribe** RPC for OpenConfig Streaming Telemetry works the same way as with the SR Linux models.
 
 We will try the ON_CHANGE option in this section with OpenConfig models.
 

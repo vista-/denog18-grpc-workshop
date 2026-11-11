@@ -4,9 +4,9 @@ In this section, we will explore gNOI services.
 
 ## 3.1 gNOI System Time
 
-The System Time RPC returns the current timestamp on the router.
+The **gNOI System Time** RPC returns the current timestamp on the router.
 
-This is often used to check connectivity between the client and the router and also to verify whether gNOI is operational on the router (similar to gNMI Capabilities).
+This is often used to check connectivity between the client and the router and also to verify whether gNOI is operational on the router (similar to **gNMI Capabilities**).
 
 ```bash
 gnoic -a leaf1:57401 -u gnoic1 -p gnoic1 --insecure system time
@@ -24,7 +24,7 @@ Expected output:
 
 ## 3.2 gNOI System Ping
 
-The System Ping RPC lets a client start a ping on the router.
+The **gNOI System Ping** RPC lets a client start a ping on the router.
 
 For our test, let's ping the system loopback of `leaf2` from `leaf1`.
 
@@ -43,7 +43,7 @@ round-trip min/avg/max/stddev = 56.421/56.421/56.421/0.000 ms
 
 ## 3.3 gNOI System Traceroute
 
-The Traceroute RPC traces the path to the destination using ICMP messages, similar to a standard traceroute, but executed remotely from a gNOI client.
+The **gNOI System Traceroute** RPC traces the path to the destination using ICMP messages, similar to a standard traceroute, but executed remotely from a gNOI client.
 
 Let's trace the path for `leaf2` loopback IP.
 
@@ -64,9 +64,9 @@ traceroute to 2.2.2.2 (2.2.2.2), 30 max hops, 56 byte packets
 The gNOI File service provides RPCs to transfer files between the client and the router.
 
 One of the use cases for gNOI File service is to perform configuration backups.  
-We will use the gNOI File Get RPC to perform a remote configuration backup from leaf1.
+We will use the **gNOI File Get** RPC to perform a remote configuration backup from `leaf1`.
 
-First, let's verify the configuration file exists. We will use the gNOI File Stat RPC for this purpose.
+First, let's verify the configuration file exists. We will use the **gNOI File Stat** RPC for this purpose.
 
 ```bash
 gnoic -a leaf1:57401 -u gnoic1 -p gnoic1 --insecure file stat --path /etc/opt/srlinux/config.json
@@ -82,7 +82,7 @@ Expected output:
 +-------------+------------------------------+----------------------+------------+------------+--------+
 ```
 
-The config file is present in the path. Now let's transfer the file to our host VM. We will use gNOI File Get RPC.
+The config file is present in the path. Now let's transfer the file to our host VM. We will use the **gNOI File Get** RPC.
 
 ```bash
 gnoic -a leaf1:57401 -u gnoic1 -p gnoic1 --insecure file get --file /etc/opt/srlinux/config.json --dst .
@@ -102,11 +102,11 @@ Verify that the file is now present locally on your host:
 ls -lrt etc/opt/srlinux/config.json
 ```
 
-You can put this command in a cronjob for daily backups, just as one example for using gNOI File Get.
+You can put this command in a cronjob for daily backups, just as one example for using **gNOI File Get**.
 
 ## 3.5 gNOI File Put
 
-The gNOI File Put RPC transfers files to the router.
+The **gNOI File Put** RPC transfers files to the router.
 
 You can use it to transfer a configuration backup from a remote server to an SR Linux device.
 
@@ -129,7 +129,7 @@ INFO[0000] "leaf1:57401" sending file="my-config.bkp" hash
 INFO[0000] "leaf1:57401" file "my-config.bkp" written successfully 
 ```
 
-Verify using File Stat RPC that the file exists on `leaf1`.
+Verify using **gNOI File Stat** that the file exists on `leaf1`.
 
 ```bash
 gnoic -a leaf1:57401 -u gnoic1 -p gnoic1 --insecure file stat --path /var/log/srlinux/my-config.bkp
@@ -151,7 +151,7 @@ Now that the config backup is transferred, you can follow the regular CLI proces
 
 ## 3.6 gNOI Healthz
 
-The Healthz RPC verifies the health of router components such as line cards and fan trays.
+The **gNOI Healthz** RPC verifies the health of router components such as line cards and fan trays.
 
 Besides checking the health of the components, the RPC also generates a tech support file you can use for troubleshooting if a part is not healthy.
 
@@ -391,6 +391,6 @@ Expected output:
 INFO[0005] target "HW-leaf1:57401" activate response "activate_ok:{}" 
 ```
 
-Then check the software version again with the `os verify` RPC used above.
+Then check the software version again with **gNOI OS Verify** as used above.
 
 ## Next Section: [gNSI Service](/gnsi/README.md)
