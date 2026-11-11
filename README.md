@@ -22,7 +22,7 @@ The password for the hosted Visual Studio Code instance is the same as the login
 Please note that if you would like to connect your own VS Code instance to the VM, you need to use port 2222 for the Remote-Connect plugin, not port 8443. 
 
 > [!CAUTION]
-> Make sure to save any work you do on the workshop VM!
+> Make sure to save any work you do on the workshop VM!  
 > We will tear the VMs down right after the workshop ends.
 
 If you would like to run the lab on your own system or VM, either during the workshop or on your own time, please make sure you have the following available on a recent Linux system:
@@ -76,7 +76,7 @@ See the [topology file](denog18-grpc.clab.yml) for more details.
 
 Log in to the VM using the credentials on your sheet.
 
-Containerlab is already installed on your VM, but if you are following along at home or on your own Linux system, run the following command to install Containerlab and its dependencies (including Docker):
+**Containerlab is already pre-installed on your workshop VM**, but if you are following along at home or on your own Linux system, run the following command to install Containerlab and its dependencies (including Docker):
 
 ```bash
 curl -sL https://containerlab.dev/setup | sudo -E bash -s "all"
@@ -157,9 +157,6 @@ Username: `admin`
 
 Password: `NokiaSrl1!` (default password for SR Linux containers)
 
-> [!NOTE]
-> Make sure to save any work you do on the workshop VM!
-> We will tear the VMs down right after the workshop ends.
 
 ```bash
 ssh leaf1

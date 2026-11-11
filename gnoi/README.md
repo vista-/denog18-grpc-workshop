@@ -82,7 +82,7 @@ Expected output:
 +-------------+------------------------------+----------------------+------------+------------+--------+
 ```
 
-The config file is present in the path. Now let's transfer the file to our host VM. We will use the **gNOI File Get** RPC.
+The config file is present in the path. Now let's transfer the file to our workshop VM. We will use the **gNOI File Get** RPC.
 
 ```bash
 gnoic -a leaf1:57401 -u gnoic1 -p gnoic1 --insecure file get --file /etc/opt/srlinux/config.json --dst .
@@ -96,7 +96,7 @@ INFO[0000] "leaf1:57401" received 38052 bytes
 INFO[0000] "leaf1:57401" file "/etc/opt/srlinux/config.json" saved 
 ```
 
-Verify that the file is now present locally on your host:
+Verify that the file is now present locally on your workshop VM:
 
 ```bash
 ls -lrt etc/opt/srlinux/config.json
@@ -110,7 +110,7 @@ The **gNOI File Put** RPC transfers files to the router.
 
 You can use it to transfer a configuration backup from a remote server to an SR Linux device.
 
-To test this, create a file on the host VM.
+To test this, create a file on the workshop VM.
 
 ```bash
 echo "config ospf bgp" > my-config.bkp
@@ -160,7 +160,7 @@ gnoic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure healthz check --path /pla
 ```
 
 > [!NOTE]
-> Wait a few seconds for the output, because the system is generating a Tech Support file before it can display the output.
+> Wait a few seconds after running the command, as the system is generating a Tech Support file before it can display the output.
 
 Expected output:
 
@@ -334,7 +334,7 @@ spine                      : ok=3    changed=0    unreachable=0    failed=1    s
 ## 3.8 Software Upgrade Using gNOI
 
 > [!IMPORTANT]
-> This section is **theory only**, as these RPCs are not implemented on the containerised SR Linux simulator.
+> This section is **theory only**, as these RPCs are not implemented on the containerised SR Linux simulator.  
 > Feel free to read this through to learn about using gNOI for software upgrades, or for later reference.
 
 You can automate a software upgrade with the following gNOI RPCs.
@@ -361,7 +361,7 @@ To transfer a software image file to the device:
 gnoic -a HW-leaf1:57401 -u admin -p NokiaSrl1! --insecure os install --version srlinux_26.10.1 --pkg ../26.10/srlinux-26.10.1.bin
 ```
 
-In these commands, `version` refers to the software version of the image being transferred and `pkg` refers to the location of the image file on the host VM.
+In these commands, `version` refers to the software version of the image being transferred and `pkg` refers to the location of the image file on the workshop VM.
 
 Expected output:
 

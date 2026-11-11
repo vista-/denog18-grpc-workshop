@@ -14,9 +14,9 @@ In this section, we will look at some of these features.
 
 The **gNSI Auth** RPC configures an authorization policy for access to gRPC services.
 
-In the previous section on gNOI, we used a user `gnoic1` to get the configuration file backup to the host VM. Because there are no authorization policies in place, this user can also transfer files to the switch.
+In the previous section on gNOI, we used a user `gnoic1` to get the configuration file backup to the workshop VM. Because there are no authorization policies in place, this user can also transfer files to the switch.
 
-If an unauthorized third party gets access to the host VM, they can use the same user to push corrupted files or images to the switch.
+If an unauthorized third party gets access to the workshop VM, they can use the same user to push corrupted files or images to the switch.
 
 We will be using gNSI to configure an authorization policy on `leaf1` that will prevent the user called `gnoic1` (used for config file backup) from writing files on the switch.
 
@@ -42,7 +42,7 @@ ERRO[0000] "leaf1:57400" File Stat failed: "leaf1:57400" file "/etc/opt/srlinux/
 Error: there was 1 error(s)
 ```
 
-As the certificate is self-signed, it is not recognized by our host VM, and rejected as it is unable to be validated. We need to add `--skip-verify` to our `gnoic` and `gnsic` commands until we install a valid certificate.
+As the certificate is self-signed, it is not recognized by our workshop VM, and rejected as it is unable to be validated. We need to add `--skip-verify` to our `gnoic` and `gnsic` commands until we install a valid certificate.
 
 ```bash
 gnoic -a leaf1 -u gnoic1 -p gnoic1 --skip-verify file stat --path /etc/opt/srlinux/config.json
@@ -78,7 +78,7 @@ INFO[0000] "leaf1:57400" file "/etc/opt/srlinux/config.json" saved
 
 Now to check whether the **gNOI File Put** works, and whether we can upload images to our switch.
 
-Create a file on your host VM:
+Create a file on your workshop VM:
 
 ```bash
 echo "this is a corrupted image file" > corrupt.img
@@ -283,7 +283,7 @@ Expected output:
 ```
 
 > [!WARNING]
-> Because the gNSIc client is in beta, it might not push the policy on the first attempt. If gNMI Get is still showing the default policy, repeat the gNSIc Authz command to push the policy again.
+> Because the gNSIc client is still in beta, it might not push the policy on the first attempt. If gNMI Get is still showing the default policy, repeat the gNSIc Authz command to push the policy again.
 
 Now test the **gNOI List**, **gNOI Get** and **gNOI Put** file operations again using the `gnoic1` user!
 
@@ -350,7 +350,7 @@ Expected output:
 
 ### 4.2.3 gNSI Certz CanGenerateCSR
 
-On your host VM, run:
+On your workshop VM, run:
 
 ```bash
 containerlab tools cert ca create

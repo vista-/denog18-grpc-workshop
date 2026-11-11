@@ -223,7 +223,7 @@ Prepared config files are located in your repo under [gnmi](../gnmi/) and are in
 > info interface ethernet-1/1 | as json
 > ```
 
-Let's push the system0 (loopback) interface configuration to all 3 devices. Make sure you are in the denog18-grpc-workshop directory before you run this command, as the file paths are relative.
+Let's push the `system0` (loopback) interface configuration to all 3 devices. Make sure you are in the denog18-grpc-workshop directory before you run this command, as the file paths are relative.
 
 ```bash
 gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure set --update-path /interface[name=system0] --update-file gnmi/leaf1-system.cfg --encoding json_ietf
@@ -537,9 +537,12 @@ Wait for the commit to time out - stretch your legs, shoot away some questions -
 Since we did not accept the commit confirm, the system rolls back automatically when the rollback timer expires.
 
 > [!TIP]
-> If you don't want to wait, you can also **commit-cancel** the non-confirmed commit.
-> You can do this either with the `--commit-cancel` CLI flag on gNMIc or with the SR Linux command
-> `tools system configuration confirmed-reject persist-id <commit-id>`
+> If you don't want to wait, you can also **commit-cancel** the non-confirmed commit.  
+> You can do this either with the `--commit-cancel` CLI flag on gNMIc or with the SR Linux command:
+> 
+> ```
+> tools system configuration confirmed-reject persist-id <commit-id>
+> ```
 
 The latest Get result shows the MTU back at the original value of 3600.
 
@@ -703,7 +706,7 @@ The streaming session can be stopped using `Ctrl+C`.
 ### 1.4.3 On-Change
 
 In some cases, we only want a counter when the value has changed. For example, after a new interface is configured, the out packets will be 0 until a protocol and neighbor are established. There is no benefit in streaming continuous zeros.  
-State leafs with a fixed set of states is similar - we don't need to check every 5 seconds whether an interface is still up, or a BGP neighbour is still established, but we do need to know when the oper-state and session-state changes, respectively.
+State leafs with a fixed set of states is similar - we don't need to check every 5 seconds whether an interface is still up, or a BGP neighbour is still established, but we do need to know when the `oper-state` and `session-state` changes, respectively.
 
 This is what the `ON-CHANGE` option is for.  
 With this option, the system only streams data when the value of the object changes, allowing for very efficient monitoring.
@@ -1122,7 +1125,10 @@ gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure sub --path /interface[nam
 Expected output after flapping the interface:
 
 ```json
-# ...
+{
+  [
+    {
+      # ...
       {
       "Path": "interface[name=ethernet-1/58]/oper-state",
       "values": {
