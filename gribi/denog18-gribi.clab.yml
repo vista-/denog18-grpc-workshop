@@ -12,14 +12,14 @@ topology:
   kinds:
     nokia_srlinux:
       type: ixr-d2l
-      image: ghcr.io/nokia/srlinux:24.10.1
+      image: ghcr.io/nokia/srlinux:26.7.1
   nodes:
     leaf1:
       startup-config: configs/leaf1-gribi-startup.cfg
       mgmt-ipv4: 172.50.20.2
       mgmt-ipv6: 2001:172:50:20::2
       type: ixr-x3b
-      license: /home/nokiauser/images/srlinux-24.lic
+      license: /opt/srexperts/srl.license
     leaf2:
       startup-config: configs/leaf2-gribi-startup.cfg
       mgmt-ipv4: 172.50.20.4
