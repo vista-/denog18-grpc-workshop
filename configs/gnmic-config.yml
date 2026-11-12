@@ -10,7 +10,7 @@ common_srl_subscriptions: &common_srl_subs
   skip-verify: true
   port: 57400
   #insecure: false
-  password: admin
+  password: NokiaSrl1!
   subscriptions:
     - srl-if-stats
     - srl-bgp
