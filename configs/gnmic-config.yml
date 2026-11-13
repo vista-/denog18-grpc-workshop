@@ -21,6 +21,7 @@ common_srl_subscriptions: &common_srl_subs
     - srl-net-instance
     - srl-grpc
     - srl-system-info
+    - srl-route-table
 targets:
   leaf1: *common_srl_subs
   leaf2: *common_srl_subs
@@ -91,11 +92,20 @@ subscriptions:
     mode: stream
     stream-mode: sample
     sample-interval: 5s
+  srl-route-table:
+    paths:
+      - /network-instance[name=default]/route-table/ipv4-unicast/route
+    mode: stream
+    stream-mode: sample
+    sample-interval: 5s
 
 outputs:
   prom-output:
     type: prometheus
     listen: :9273
+    # Drop a metric soon after the switch stops reporting it, so a withdrawn
+    # route does not linger on the dashboard.
+    expiration: 15s
     event-processors:
       - system-info
       - trim-prefixes
@@ -103,8 +113,9 @@ outputs:
       - oper-state-to-int
 
 processors:
-  # Prometheus only stores numbers: timestamps become epoch seconds and
-  # version strings become a "version" label on a metric with the value 1.
+  # Prometheus only stores numbers: timestamps become epoch seconds, version
+  # strings become a "version" label on a metric with the value 1 and the
+  # active flag of a route becomes 1 or 0.
   system-info:
     event-starlark:
       source: |
@@ -118,6 +129,8 @@ processors:
               elif name.endswith("/version"):
                 e.tags["version"] = value
                 e.values[name] = 1
+              elif name.endswith("/active"):
+                e.values[name] = 1 if value else 0
           return events
 
   trim-prefixes:

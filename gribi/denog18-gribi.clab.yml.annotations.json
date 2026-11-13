@@ -198,7 +198,8 @@
       "position": {
         "x": 340,
         "y": 320
-      }
+      },
+      "icon": "leaf"
     },
     {
       "id": "leaf2",
@@ -206,7 +207,8 @@
       "position": {
         "x": 540,
         "y": 320
-      }
+      },
+      "icon": "leaf"
     },
     {
       "id": "spine",
@@ -214,6 +216,28 @@
       "position": {
         "x": 440,
         "y": 160
+      },
+      "icon": "spine"
+    },
+    {
+      "id": "gnmic",
+      "position": {
+        "x": 720,
+        "y": 160
+      }
+    },
+    {
+      "id": "prometheus",
+      "position": {
+        "x": 720,
+        "y": 240
+      }
+    },
+    {
+      "id": "grafana",
+      "position": {
+        "x": 720,
+        "y": 320
       }
     }
   ],
@@ -222,8 +246,8 @@
       "id": "Clab-Link1",
       "source": "leaf2",
       "target": "spine",
-      "sourceEndpoint": "ethernet-1/2",
-      "targetEndpoint": "ethernet-1/2",
+      "sourceEndpoint": "e1-2",
+      "targetEndpoint": "e1-2",
       "endpointLabelOffsetEnabled": true,
       "endpointLabelOffset": 40
     },
@@ -231,8 +255,8 @@
       "id": "Clab-Link0",
       "source": "leaf1",
       "target": "spine",
-      "sourceEndpoint": "ethernet-1/1",
-      "targetEndpoint": "ethernet-1/1",
+      "sourceEndpoint": "e1-1",
+      "targetEndpoint": "e1-1",
       "endpointLabelOffsetEnabled": true,
       "endpointLabelOffset": 40
     },
@@ -240,8 +264,8 @@
       "id": "Clab-Link2",
       "source": "leaf1",
       "target": "leaf2",
-      "sourceEndpoint": "ethernet-1/5",
-      "targetEndpoint": "ethernet-1/5",
+      "sourceEndpoint": "e1-5",
+      "targetEndpoint": "e1-5",
       "endpointLabelOffsetEnabled": true,
       "endpointLabelOffset": 40
     }

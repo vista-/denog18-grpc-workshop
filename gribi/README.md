@@ -38,6 +38,14 @@ The lab is deployed with all required configuration.
 > [!NOTE]
 > Wait a few seconds for BGP sessions to come up.
 
+The lab comes with the same telemetry stack as the previous one. Open Grafana and select the **DENOG18 gRIBI** dashboard to follow this section live.
+
+To see which path the traffic takes, start a stream of pings from `leaf1` to `2.2.2.2`:
+
+```bash
+./traffic.sh start
+```
+
 ### 5.1.3 gNOI Traceroute
 
 Find the path taken from `leaf1` to reach `2.2.2.2` on `leaf2`. To do this, we will perform a traceroute using the **gNOI System Traceroute** RPC.
@@ -399,6 +407,9 @@ traceroute to 2.2.2.2 (2.2.2.2), 30 max hops, 56 byte packets
 
 `2.2.2.2` is now reachable over the direct link to `leaf2`.
 
+On the dashboard, the traffic leaving `leaf1` has moved from the link to `spine` to the direct link, and the route table lists `2.2.2.2/32` with the type `gribi`.  
+The replies still return through `spine`: `leaf2` did not get a gRIBI route and keeps following BGP.
+
 ### 5.1.12 gRIBI Flush
 
 To wrap this section up, flush all gRIBI routes using the **gRIBI Flush** RPC:
@@ -413,6 +424,12 @@ Expected output:
 INFO[0000] got 1 results                                
 INFO[0000] "leaf1:57401": timestamp: 1747763792059403059
 result: OK 
+```
+
+The traffic is back on the path through `spine`. Stop the stream of pings:
+
+```bash
+./traffic.sh stop
 ```
 
 ## Next Section (Optional): [Bonus Challenges](/z-bonus-challenge/README.md)

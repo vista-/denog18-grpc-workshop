@@ -1,0 +1,1500 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "Traffic rate of the interfaces in use, as measured by SR Linux. The Node selector narrows it from the whole fabric (All) to single switches.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "bps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 14,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "sortBy": "Name",
+          "sortDesc": false
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "interface_traffic_rate_in_bps{source=~\"$Node\"} and on(source, interface_name) (interface_statistics_in_packets + interface_statistics_out_packets > 0)",
+          "legendFormat": "{{source}} {{interface_name}} in",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "interface_traffic_rate_out_bps{source=~\"$Node\"} and on(source, interface_name) (interface_statistics_in_packets + interface_statistics_out_packets > 0)",
+          "legendFormat": "{{source}} {{interface_name}} out",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Interface throughput",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 14,
+        "w": 14,
+        "x": 0,
+        "y": 8
+      },
+      "id": 2,
+      "options": {
+        "animationControlEnabled": true,
+        "animationsEnabled": true,
+        "debuggingCtr": {
+          "colorsCtr": 1,
+          "dataCtr": 0,
+          "displaySvgCtr": 0,
+          "mappingsCtr": 0,
+          "timingsCtr": 0
+        },
+        "highlighterEnabled": true,
+        "panZoomEnabled": true,
+        "panelConfig": "---\nanchors:\n  thresholds-operstate: &thresholds-operstate\n    - { color: \"red\", level: 0 }\n    - { color: \"green\", level: 1 }\n  thresholds-traffic: &thresholds-traffic\n    - { color: \"gray\", level: 0 }\n    - { color: \"green\", level: 10000 }\n    - { color: \"yellow\", level: 500000 }\n    - { color: \"orange\", level: 2000000 }\n    - { color: \"red\", level: 5000000 }\n  thresholds-rate-label: &thresholds-rate-label\n    - { color: \"white\", level: 0 }\n  label-config: &label-config\n    separator: \"replace\"\n    units: \"bps\"\n    decimalPoints: 1\n    valueMappings:\n      - { valueMax: 10000, text: \"\\u200B\" }\ncellIdPreamble: \"cell-\"\ntagConfig:\n  legend: [\"hide-rates\"]\n  lowlightAlphaFactor: 0\n  highlightRgbFactor: 1\ncells:\n  \"leaf1:e1-1\":\n    dataRef: \"oper-state:leaf1:e1-1\"\n    fillColor:\n      thresholds: *thresholds-operstate\n    tags: [\"hide-rates\"]\n  \"spine:e1-1\":\n    dataRef: \"oper-state:spine:e1-1\"\n    fillColor:\n      thresholds: *thresholds-operstate\n    tags: [\"hide-rates\"]\n  \"link_id:leaf1:e1-1:spine:e1-1\":\n    dataRef: \"leaf1:e1-1:out\"\n    strokeColor:\n      thresholds: *thresholds-traffic\n    tags: [\"hide-rates\"]\n  \"link_id:leaf1:e1-1:spine:e1-1:label\":\n    dataRef: \"leaf1:e1-1:out\"\n    label: *label-config\n    labelColor:\n      thresholds: *thresholds-rate-label\n  \"link_id:spine:e1-1:leaf1:e1-1\":\n    dataRef: \"spine:e1-1:out\"\n    strokeColor:\n      thresholds: *thresholds-traffic\n    tags: [\"hide-rates\"]\n  \"link_id:spine:e1-1:leaf1:e1-1:label\":\n    dataRef: \"spine:e1-1:out\"\n    label: *label-config\n    labelColor:\n      thresholds: *thresholds-rate-label\n  \"leaf2:e1-2\":\n    dataRef: \"oper-state:leaf2:e1-2\"\n    fillColor:\n      thresholds: *thresholds-operstate\n    tags: [\"hide-rates\"]\n  \"spine:e1-2\":\n    dataRef: \"oper-state:spine:e1-2\"\n    fillColor:\n      thresholds: *thresholds-operstate\n    tags: [\"hide-rates\"]\n  \"link_id:leaf2:e1-2:spine:e1-2\":\n    dataRef: \"leaf2:e1-2:out\"\n    strokeColor:\n      thresholds: *thresholds-traffic\n    tags: [\"hide-rates\"]\n  \"link_id:leaf2:e1-2:spine:e1-2:label\":\n    dataRef: \"leaf2:e1-2:out\"\n    label: *label-config\n    labelColor:\n      thresholds: *thresholds-rate-label\n  \"link_id:spine:e1-2:leaf2:e1-2\":\n    dataRef: \"spine:e1-2:out\"\n    strokeColor:\n      thresholds: *thresholds-traffic\n    tags: [\"hide-rates\"]\n  \"link_id:spine:e1-2:leaf2:e1-2:label\":\n    dataRef: \"spine:e1-2:out\"\n    label: *label-config\n    labelColor:\n      thresholds: *thresholds-rate-label\n  \"leaf1:e1-5\":\n    dataRef: \"oper-state:leaf1:e1-5\"\n    fillColor:\n      thresholds: *thresholds-operstate\n    tags: [\"hide-rates\"]\n  \"leaf2:e1-5\":\n    dataRef: \"oper-state:leaf2:e1-5\"\n    fillColor:\n      thresholds: *thresholds-operstate\n    tags: [\"hide-rates\"]\n  \"link_id:leaf1:e1-5:leaf2:e1-5\":\n    dataRef: \"leaf1:e1-5:out\"\n    strokeColor:\n      thresholds: *thresholds-traffic\n    tags: [\"hide-rates\"]\n  \"link_id:leaf1:e1-5:leaf2:e1-5:label\":\n    dataRef: \"leaf1:e1-5:out\"\n    label: *label-config\n    labelColor:\n      thresholds: *thresholds-rate-label\n  \"link_id:leaf2:e1-5:leaf1:e1-5\":\n    dataRef: \"leaf2:e1-5:out\"\n    strokeColor:\n      thresholds: *thresholds-traffic\n    tags: [\"hide-rates\"]\n  \"link_id:leaf2:e1-5:leaf1:e1-5:label\":\n    dataRef: \"leaf2:e1-5:out\"\n    label: *label-config\n    labelColor:\n      thresholds: *thresholds-rate-label\n",
+        "siteConfig": "",
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"100%\" height=\"100%\" viewBox=\"0 0 1008.9022038391029 714.3972814195371\" preserveAspectRatio=\"xMidYMid meet\"><g class=\"annotation-groups-layer\" transform=\"translate(-839.527872, -398.692473) scale(2.907274)\"/><g class=\"annotation-shapes-layer\" transform=\"translate(-839.527872, -398.692473) scale(2.907274)\"/><defs>\n\n</defs><g class=\"export-graph-layer\" transform=\"translate(-839.527872, -398.692473) scale(2.907274)\"><g class=\"export-edge\" data-id=\"Clab-Link0\"><g class=\"grafana-traffic-half\" id=\"cell-link_id:leaf1:e1-1:spine:e1-1\" data-cell-id=\"link_id:leaf1:e1-1:spine:e1-1\"><path d=\"M 360 312 L 406.667 260\" fill=\"none\" stroke=\"gray\" stroke-width=\"4\" opacity=\"0.5\"/><text x=\"377.733\" y=\"292.24\" font-size=\"10\" font-family=\"Helvetica, Arial, sans-serif\" id=\"cell-link_id:leaf1:e1-1:spine:e1-1:label\" data-cell-id=\"link_id:leaf1:e1-1:spine:e1-1:label\" fill=\"currentColor\" text-anchor=\"middle\" dy=\"0.32em\" stroke=\"none\" style=\"color: rgb(255, 255, 255); filter: drop-shadow(rgba(0, 0, 0, 0.95) 0px 0px 1px);\">rate</text></g><g class=\"grafana-traffic-half\" id=\"cell-link_id:spine:e1-1:leaf1:e1-1\" data-cell-id=\"link_id:spine:e1-1:leaf1:e1-1\"><path d=\"M 406.667 260 L 453.333 208\" fill=\"none\" stroke=\"gray\" stroke-width=\"4\" opacity=\"0.5\"/><text x=\"424.40\" y=\"240.24\" font-size=\"10\" font-family=\"Helvetica, Arial, sans-serif\" id=\"cell-link_id:spine:e1-1:leaf1:e1-1:label\" data-cell-id=\"link_id:spine:e1-1:leaf1:e1-1:label\" fill=\"currentColor\" text-anchor=\"middle\" dy=\"0.32em\" stroke=\"none\" style=\"color: rgb(255, 255, 255); filter: drop-shadow(rgba(0, 0, 0, 0.95) 0px 0px 1px);\">rate</text></g><g class=\"edge-label\"><circle cx=\"360\" cy=\"312\" r=\"7\" fill=\"#bec8d2\" stroke=\"rgba(0, 0, 0, 0.25)\" stroke-width=\"0.7\" id=\"cell-leaf1:e1-1\" data-cell-id=\"leaf1:e1-1\" class=\"grafana-operstate-cell\"/><text x=\"360\" y=\"312\" font-size=\"10\" font-weight=\"600\" font-family=\"-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, sans-serif\" dy=\"0.35em\" fill=\"#FFFFFF\" text-anchor=\"middle\" stroke=\"rgba(0, 0, 0, 0.95)\" stroke-width=\"0.6\" paint-order=\"stroke\" stroke-linejoin=\"round\">1</text></g><g class=\"edge-label\"><circle cx=\"453.3333333333333\" cy=\"208\" r=\"7\" fill=\"#bec8d2\" stroke=\"rgba(0, 0, 0, 0.25)\" stroke-width=\"0.7\" id=\"cell-spine:e1-1\" data-cell-id=\"spine:e1-1\" class=\"grafana-operstate-cell\"/><text x=\"453.3333333333333\" y=\"208\" font-size=\"10\" font-weight=\"600\" font-family=\"-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, sans-serif\" dy=\"0.35em\" fill=\"#FFFFFF\" text-anchor=\"middle\" stroke=\"rgba(0, 0, 0, 0.95)\" stroke-width=\"0.6\" paint-order=\"stroke\" stroke-linejoin=\"round\">1</text></g></g><g class=\"export-edge\" data-id=\"Clab-Link1\"><g class=\"grafana-traffic-half\" id=\"cell-link_id:leaf2:e1-2:spine:e1-2\" data-cell-id=\"link_id:leaf2:e1-2:spine:e1-2\"><path d=\"M 560 312 L 513.333 260\" fill=\"none\" stroke=\"gray\" stroke-width=\"4\" opacity=\"0.5\"/><text x=\"542.267\" y=\"292.24\" font-size=\"10\" font-family=\"Helvetica, Arial, sans-serif\" id=\"cell-link_id:leaf2:e1-2:spine:e1-2:label\" data-cell-id=\"link_id:leaf2:e1-2:spine:e1-2:label\" fill=\"currentColor\" text-anchor=\"middle\" dy=\"0.32em\" stroke=\"none\" style=\"color: rgb(255, 255, 255); filter: drop-shadow(rgba(0, 0, 0, 0.95) 0px 0px 1px);\">rate</text></g><g class=\"grafana-traffic-half\" id=\"cell-link_id:spine:e1-2:leaf2:e1-2\" data-cell-id=\"link_id:spine:e1-2:leaf2:e1-2\"><path d=\"M 513.333 260 L 466.667 208\" fill=\"none\" stroke=\"gray\" stroke-width=\"4\" opacity=\"0.5\"/><text x=\"495.60\" y=\"240.24\" font-size=\"10\" font-family=\"Helvetica, Arial, sans-serif\" id=\"cell-link_id:spine:e1-2:leaf2:e1-2:label\" data-cell-id=\"link_id:spine:e1-2:leaf2:e1-2:label\" fill=\"currentColor\" text-anchor=\"middle\" dy=\"0.32em\" stroke=\"none\" style=\"color: rgb(255, 255, 255); filter: drop-shadow(rgba(0, 0, 0, 0.95) 0px 0px 1px);\">rate</text></g><g class=\"edge-label\"><circle cx=\"560\" cy=\"312\" r=\"7\" fill=\"#bec8d2\" stroke=\"rgba(0, 0, 0, 0.25)\" stroke-width=\"0.7\" id=\"cell-leaf2:e1-2\" data-cell-id=\"leaf2:e1-2\" class=\"grafana-operstate-cell\"/><text x=\"560\" y=\"312\" font-size=\"10\" font-weight=\"600\" font-family=\"-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, sans-serif\" dy=\"0.35em\" fill=\"#FFFFFF\" text-anchor=\"middle\" stroke=\"rgba(0, 0, 0, 0.95)\" stroke-width=\"0.6\" paint-order=\"stroke\" stroke-linejoin=\"round\">2</text></g><g class=\"edge-label\"><circle cx=\"466.6666666666667\" cy=\"208\" r=\"7\" fill=\"#bec8d2\" stroke=\"rgba(0, 0, 0, 0.25)\" stroke-width=\"0.7\" id=\"cell-spine:e1-2\" data-cell-id=\"spine:e1-2\" class=\"grafana-operstate-cell\"/><text x=\"466.6666666666667\" y=\"208\" font-size=\"10\" font-weight=\"600\" font-family=\"-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, sans-serif\" dy=\"0.35em\" fill=\"#FFFFFF\" text-anchor=\"middle\" stroke=\"rgba(0, 0, 0, 0.95)\" stroke-width=\"0.6\" paint-order=\"stroke\" stroke-linejoin=\"round\">2</text></g></g><g class=\"export-edge\" data-id=\"Clab-Link2\"><g class=\"grafana-traffic-half\" id=\"cell-link_id:leaf1:e1-5:leaf2:e1-5\" data-cell-id=\"link_id:leaf1:e1-5:leaf2:e1-5\"><path d=\"M 388 340 L 460 340\" fill=\"none\" stroke=\"gray\" stroke-width=\"4\" opacity=\"0.5\"/><text x=\"415.36\" y=\"340\" font-size=\"10\" font-family=\"Helvetica, Arial, sans-serif\" id=\"cell-link_id:leaf1:e1-5:leaf2:e1-5:label\" data-cell-id=\"link_id:leaf1:e1-5:leaf2:e1-5:label\" fill=\"currentColor\" text-anchor=\"middle\" dy=\"0.32em\" stroke=\"none\" style=\"color: rgb(255, 255, 255); filter: drop-shadow(rgba(0, 0, 0, 0.95) 0px 0px 1px);\">rate</text></g><g class=\"grafana-traffic-half\" id=\"cell-link_id:leaf2:e1-5:leaf1:e1-5\" data-cell-id=\"link_id:leaf2:e1-5:leaf1:e1-5\"><path d=\"M 460 340 L 532 340\" fill=\"none\" stroke=\"gray\" stroke-width=\"4\" opacity=\"0.5\"/><text x=\"504.64\" y=\"340\" font-size=\"10\" font-family=\"Helvetica, Arial, sans-serif\" id=\"cell-link_id:leaf2:e1-5:leaf1:e1-5:label\" data-cell-id=\"link_id:leaf2:e1-5:leaf1:e1-5:label\" fill=\"currentColor\" text-anchor=\"middle\" dy=\"0.32em\" stroke=\"none\" style=\"color: rgb(255, 255, 255); filter: drop-shadow(rgba(0, 0, 0, 0.95) 0px 0px 1px);\">rate</text></g><g class=\"edge-label\"><circle cx=\"388\" cy=\"340\" r=\"7\" fill=\"#bec8d2\" stroke=\"rgba(0, 0, 0, 0.25)\" stroke-width=\"0.7\" id=\"cell-leaf1:e1-5\" data-cell-id=\"leaf1:e1-5\" class=\"grafana-operstate-cell\"/><text x=\"388\" y=\"340\" font-size=\"10\" font-weight=\"600\" font-family=\"-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, sans-serif\" dy=\"0.35em\" fill=\"#FFFFFF\" text-anchor=\"middle\" stroke=\"rgba(0, 0, 0, 0.95)\" stroke-width=\"0.6\" paint-order=\"stroke\" stroke-linejoin=\"round\">5</text></g><g class=\"edge-label\"><circle cx=\"532\" cy=\"340\" r=\"7\" fill=\"#bec8d2\" stroke=\"rgba(0, 0, 0, 0.25)\" stroke-width=\"0.7\" id=\"cell-leaf2:e1-5\" data-cell-id=\"leaf2:e1-5\" class=\"grafana-operstate-cell\"/><text x=\"532\" y=\"340\" font-size=\"10\" font-weight=\"600\" font-family=\"-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, sans-serif\" dy=\"0.35em\" fill=\"#FFFFFF\" text-anchor=\"middle\" stroke=\"rgba(0, 0, 0, 0.95)\" stroke-width=\"0.6\" paint-order=\"stroke\" stroke-linejoin=\"round\">5</text></g></g><g class=\"export-node topology-node\" data-id=\"leaf1\"><g transform=\"rotate(0 360 340)\"><svg class=\"export-node-icon\" x=\"340\" y=\"320\" width=\"40\" height=\"40\" viewBox=\"4 4 56 56\"><path d=\"M29 6.6Q32 4.9 35 6.6L53 17Q56 18.7 56 22.2V41.8Q56 45.3 53 47L35 57.4Q32 59.1 29 57.4L11 47Q8 45.3 8 41.8V22.2Q8 18.7 11 17Z\" fill=\"none\" stroke=\"#ddf8ff\" stroke-width=\"2.4\" stroke-linejoin=\"round\"/><g color=\"#00c9ff\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M28 29L21 22M21 28V22H27M36 29L43 22M37 22H43V28M21 36H43M21 42H43\"/></g></svg></g><rect x=\"343.5\" y=\"362\" width=\"33\" height=\"18.8\" fill=\"rgba(0, 0, 0, 0.7)\" rx=\"3\" ry=\"3\"/><text x=\"360\" y=\"371.4\" font-size=\"11.2\" font-weight=\"500\" font-family=\"-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, sans-serif\" dy=\"0.35em\" fill=\"#F5F5F5\" text-anchor=\"middle\">leaf1</text></g><g class=\"export-node topology-node\" data-id=\"leaf2\"><g transform=\"rotate(0 560 340)\"><svg class=\"export-node-icon\" x=\"540\" y=\"320\" width=\"40\" height=\"40\" viewBox=\"4 4 56 56\"><path d=\"M29 6.6Q32 4.9 35 6.6L53 17Q56 18.7 56 22.2V41.8Q56 45.3 53 47L35 57.4Q32 59.1 29 57.4L11 47Q8 45.3 8 41.8V22.2Q8 18.7 11 17Z\" fill=\"none\" stroke=\"#ddf8ff\" stroke-width=\"2.4\" stroke-linejoin=\"round\"/><g color=\"#00c9ff\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M28 29L21 22M21 28V22H27M36 29L43 22M37 22H43V28M21 36H43M21 42H43\"/></g></svg></g><rect x=\"543.5\" y=\"362\" width=\"33\" height=\"18.8\" fill=\"rgba(0, 0, 0, 0.7)\" rx=\"3\" ry=\"3\"/><text x=\"560\" y=\"371.4\" font-size=\"11.2\" font-weight=\"500\" font-family=\"-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, sans-serif\" dy=\"0.35em\" fill=\"#F5F5F5\" text-anchor=\"middle\">leaf2</text></g><g class=\"export-node topology-node\" data-id=\"spine\"><g transform=\"rotate(0 460 180)\"><svg class=\"export-node-icon\" x=\"440\" y=\"160\" width=\"40\" height=\"40\" viewBox=\"4 4 56 56\"><path d=\"M29 6.6Q32 4.9 35 6.6L53 17Q56 18.7 56 22.2V41.8Q56 45.3 53 47L35 57.4Q32 59.1 29 57.4L11 47Q8 45.3 8 41.8V22.2Q8 18.7 11 17Z\" fill=\"none\" stroke=\"#ddf8ff\" stroke-width=\"2.4\" stroke-linejoin=\"round\"/><g color=\"#00c9ff\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M20 26H44M24 22L20 26L24 30M40 22L44 26L40 30M20 38H44M24 34L20 38L24 42M40 34L44 38L40 42\"/></g></svg></g><rect x=\"442.5\" y=\"139.2\" width=\"35\" height=\"18.8\" fill=\"rgba(0, 0, 0, 0.7)\" rx=\"3\" ry=\"3\"/><text x=\"460\" y=\"148.6\" font-size=\"11.2\" font-weight=\"500\" font-family=\"-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, sans-serif\" dy=\"0.35em\" fill=\"#F5F5F5\" text-anchor=\"middle\">spine</text></g></g><g class=\"annotation-shapes-layer\" transform=\"translate(-839.527872, -398.692473) scale(2.907274)\"/><g class=\"annotation-text-layer\" transform=\"translate(-839.527872, -398.692473) scale(2.907274)\"><text x=\"428.99\" y=\"280.04\" dy=\"0.35em\" font-size=\"9\" font-family=\"Arial, Helvetica, sans-serif\" fill=\"#bbbebf\" text-anchor=\"middle\" transform=\"rotate(-48.09 428.99 280.04)\">192.168.10.0/31</text><text x=\"491.01\" y=\"280.04\" dy=\"0.35em\" font-size=\"9\" font-family=\"Arial, Helvetica, sans-serif\" fill=\"#bbbebf\" text-anchor=\"middle\" transform=\"rotate(48.09 491.01 280.04)\">192.168.20.0/31</text><text x=\"460.00\" y=\"354.00\" dy=\"0.35em\" font-size=\"9\" font-family=\"Arial, Helvetica, sans-serif\" fill=\"#bbbebf\" text-anchor=\"middle\">172.16.10.0/31</text><text x=\"487.00\" y=\"174.00\" dy=\"0.35em\" font-size=\"8\" font-family=\"Arial, Helvetica, sans-serif\" fill=\"#bbbebf\" text-anchor=\"start\">Loopback:</text><text x=\"487.00\" y=\"186.00\" dy=\"0.35em\" font-size=\"8\" font-family=\"Arial, Helvetica, sans-serif\" fill=\"#bbbebf\" text-anchor=\"start\">3.3.3.3/32</text><text x=\"333.00\" y=\"334.00\" dy=\"0.35em\" font-size=\"8\" font-family=\"Arial, Helvetica, sans-serif\" fill=\"#bbbebf\" text-anchor=\"end\">Loopback:</text><text x=\"333.00\" y=\"346.00\" dy=\"0.35em\" font-size=\"8\" font-family=\"Arial, Helvetica, sans-serif\" fill=\"#bbbebf\" text-anchor=\"end\">1.1.1.1/32</text><text x=\"587.00\" y=\"334.00\" dy=\"0.35em\" font-size=\"8\" font-family=\"Arial, Helvetica, sans-serif\" fill=\"#bbbebf\" text-anchor=\"start\">Loopback:</text><text x=\"587.00\" y=\"346.00\" dy=\"0.35em\" font-size=\"8\" font-family=\"Arial, Helvetica, sans-serif\" fill=\"#bbbebf\" text-anchor=\"start\">2.2.2.2/32</text></g><g class=\"grafana-traffic-legend\" opacity=\"0.95\"><g transform=\"translate(40.701836 52.330932000000004)\"><circle cx=\"0\" cy=\"0\" r=\"11.629096\" fill=\"#b8c4d3\"/><text x=\"29.072740000000003\" y=\"0\" dy=\"0.35em\" font-size=\"31.980014\" font-family=\"Helvetica, Arial, sans-serif\" font-weight=\"500\" fill=\"#e7edf7\" stroke=\"rgba(0, 0, 0, 0.65)\" stroke-width=\"1.3082733000000002\" paint-order=\"stroke\">0 - 10 Kbps</text></g><g transform=\"translate(40.701836 98.847316)\"><circle cx=\"0\" cy=\"0\" r=\"11.629096\" fill=\"#5fe15c\"/><text x=\"29.072740000000003\" y=\"0\" dy=\"0.35em\" font-size=\"31.980014\" font-family=\"Helvetica, Arial, sans-serif\" font-weight=\"500\" fill=\"#e7edf7\" stroke=\"rgba(0, 0, 0, 0.65)\" stroke-width=\"1.3082733000000002\" paint-order=\"stroke\">10 - 500 Kbps</text></g><g transform=\"translate(40.701836 145.3637)\"><circle cx=\"0\" cy=\"0\" r=\"11.629096\" fill=\"#ffe24a\"/><text x=\"29.072740000000003\" y=\"0\" dy=\"0.35em\" font-size=\"31.980014\" font-family=\"Helvetica, Arial, sans-serif\" font-weight=\"500\" fill=\"#e7edf7\" stroke=\"rgba(0, 0, 0, 0.65)\" stroke-width=\"1.3082733000000002\" paint-order=\"stroke\">500 - 2000 Kbps</text></g><g transform=\"translate(40.701836 191.880084)\"><circle cx=\"0\" cy=\"0\" r=\"11.629096\" fill=\"#ff9f1a\"/><text x=\"29.072740000000003\" y=\"0\" dy=\"0.35em\" font-size=\"31.980014\" font-family=\"Helvetica, Arial, sans-serif\" font-weight=\"500\" fill=\"#e7edf7\" stroke=\"rgba(0, 0, 0, 0.65)\" stroke-width=\"1.3082733000000002\" paint-order=\"stroke\">2000 - 5000 Kbps</text></g><g transform=\"translate(40.701836 238.39646800000003)\"><circle cx=\"0\" cy=\"0\" r=\"11.629096\" fill=\"#ff4f6b\"/><text x=\"29.072740000000003\" y=\"0\" dy=\"0.35em\" font-size=\"31.980014\" font-family=\"Helvetica, Arial, sans-serif\" font-weight=\"500\" fill=\"#e7edf7\" stroke=\"rgba(0, 0, 0, 0.65)\" stroke-width=\"1.3082733000000002\" paint-order=\"stroke\">5000+ Kbps</text></g></g></svg>",
+        "testDataEnabled": false,
+        "timeSliderEnabled": false
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "interface_oper_state",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "oper-state:{{source}}:{{interface_name}}",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "interface_traffic_rate_out_bps",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "{{source}}:{{interface_name}}:out",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "interface_traffic_rate_in_bps",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "{{source}}:{{interface_name}}:in",
+          "range": true,
+          "refId": "C"
+        }
+      ],
+      "title": "Network topology",
+      "type": "andrewbmchugh-flow-panel",
+      "description": "Live view of the lab topology. Link halves are coloured by the traffic rate leaving that end of the link, interface bubbles by oper-state."
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "Active routes that were installed with gRIBI, per switch.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 10,
+        "x": 14,
+        "y": 0
+      },
+      "id": 30,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "count by (source) (network_instance_route_table_ipv4_unicast_route_active{route_route_type=\"gribi\"} == 1)",
+          "legendFormat": "{{source}}",
+          "range": false,
+          "refId": "A",
+          "instant": true
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "vector(0) unless on() network_instance_route_table_ipv4_unicast_route_active{route_route_type=\"gribi\"} == 1",
+          "legendFormat": "none installed",
+          "range": false,
+          "refId": "B",
+          "instant": true
+        }
+      ],
+      "title": "gRIBI routes",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "leaf1 reaches 2.2.2.2 through the spine, until a gRIBI route sends the traffic over the direct link to leaf2.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "bps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 10,
+        "x": 14,
+        "y": 4
+      },
+      "id": 31,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "sortBy": "Name",
+          "sortDesc": false
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "interface_traffic_rate_out_bps{source=\"leaf1\", interface_name=\"e1-1\"}",
+          "legendFormat": "via spine (e1-1)",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "interface_traffic_rate_out_bps{source=\"leaf1\", interface_name=\"e1-5\"}",
+          "legendFormat": "direct to leaf2 (e1-5)",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Traffic leaving leaf1",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "Routes of the default network instance. A route injected with gRIBI shows up with the type gribi and takes over from the BGP route, which has a higher preference value.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Node"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 90
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Preference"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 110
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Type"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "text"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "gribi": {
+                        "color": "orange",
+                        "index": 0
+                      },
+                      "bgp": {
+                        "color": "blue",
+                        "index": 1
+                      }
+                    },
+                    "type": "value"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Active"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 80
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "0": {
+                        "color": "red",
+                        "index": 0,
+                        "text": "no"
+                      },
+                      "1": {
+                        "color": "green",
+                        "index": 1,
+                        "text": "yes"
+                      }
+                    },
+                    "type": "value"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 10,
+        "x": 14,
+        "y": 12
+      },
+      "id": 32,
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": false,
+            "displayName": "Node"
+          }
+        ]
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "sum by (source, route_ipv4_prefix, route_route_type) (network_instance_route_table_ipv4_unicast_route_active{source=~\"$Node\"})",
+          "legendFormat": "",
+          "range": false,
+          "refId": "A",
+          "format": "table",
+          "instant": true
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "sum by (source, route_ipv4_prefix, route_route_type) (network_instance_route_table_ipv4_unicast_route_preference{source=~\"$Node\"})",
+          "legendFormat": "",
+          "range": false,
+          "refId": "B",
+          "format": "table",
+          "instant": true
+        }
+      ],
+      "title": "IPv4 route table",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "source": 0,
+              "route_ipv4_prefix": 1,
+              "route_route_type": 2,
+              "Value #A": 3,
+              "Value #B": 4
+            },
+            "renameByName": {
+              "source": "Node",
+              "route_ipv4_prefix": "Prefix",
+              "route_route_type": "Type",
+              "Value #A": "Active",
+              "Value #B": "Preference"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 22
+      },
+      "id": 20,
+      "panels": [],
+      "repeat": "Node",
+      "title": "$Node",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "Accepted gRPC calls per RPC since the switch booted, across all gRPC servers. Every gnmic, gnoic or gnsic command you run against this switch adds to its RPC.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "displayName": "${__field.labels.rpc}",
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 23
+      },
+      "id": 11,
+      "options": {
+        "displayMode": "basic",
+        "legend": {
+          "showLegend": false
+        },
+        "maxVizHeight": 28,
+        "minVizHeight": 18,
+        "minVizWidth": 8,
+        "namePlacement": "left",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": false,
+        "sizing": "manual",
+        "text": {
+          "titleSize": 12,
+          "valueSize": 16
+        },
+        "valueMode": "text"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "sum by (rpc) (label_replace(system_grpc_server_statistics_rpc_access_accepts{source=\"$Node\"}, \"rpc\", \"$1 $2\", \"rpc_name\", \"/(?:.*\\\\.)?(\\\\w+)/(\\\\w+)\"))",
+          "legendFormat": "{{rpc}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "gRPC calls",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "Rejected calls: failed logins and calls the user may not make. Policy denials: calls denied by the gNSI Authz policy.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 6,
+        "y": 23
+      },
+      "id": 12,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "sum(system_grpc_server_statistics_access_rejects{source=\"$Node\"}) or vector(0)",
+          "legendFormat": "Rejected calls",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "sum(system_aaa_authorization_authz_policy_counters_rpc_access_rejects{source=\"$Node\"}) or vector(0)",
+          "legendFormat": "Policy denials",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "gRPC rejects",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "Version of the installed gNSI Authz policy.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "noValue": "-",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 3,
+        "x": 10,
+        "y": 23
+      },
+      "id": 13,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "name",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "system_aaa_authorization_authz_policy_version{source=\"$Node\"}",
+          "legendFormat": "{{version}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Authz policy",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "noValue": "-",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          },
+          "unit": "dateTimeFromNow"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 3,
+        "x": 13,
+        "y": 23
+      },
+      "id": 14,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "system_configuration_last_change{source=\"$Node\"} * 1000",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Config changed",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "Port MTU of the interfaces in use.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "noValue": "-",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 3,
+        "x": 16,
+        "y": 23
+      },
+      "id": 15,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "interface_mtu{source=\"$Node\"} and on(source, interface_name) (interface_statistics_in_packets + interface_statistics_out_packets > 0)",
+          "legendFormat": "{{interface_name}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Interface MTU",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "Running SR Linux release.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "noValue": "-",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 3,
+        "x": 19,
+        "y": 23
+      },
+      "id": 16,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "name",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "label_replace(system_information_version{source=\"$Node\"}, \"release\", \"$1\", \"version\", \"(v[0-9.]+).*\")",
+          "legendFormat": "{{release}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Software",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "noValue": "-",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          },
+          "unit": "dateTimeFromNow"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 2,
+        "x": 22,
+        "y": 23
+      },
+      "id": 17,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "system_information_last_booted{source=\"$Node\"} * 1000",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Booted",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "BGP statistics of the default network instance. Empty until BGP is configured.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "noValue": "-",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 0,
+        "y": 29
+      },
+      "id": 5,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "network_instance_protocols_bgp_statistics_up_peers{source=\"$Node\", network_instance_name=\"default\"}",
+          "legendFormat": "Up peers",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "network_instance_protocols_bgp_statistics_total_peers{source=\"$Node\", network_instance_name=\"default\"}",
+          "legendFormat": "Total peers",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "network_instance_protocols_bgp_statistics_total_received_routes{source=\"$Node\", network_instance_name=\"default\"}",
+          "legendFormat": "Rx routes",
+          "range": true,
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "network_instance_protocols_bgp_statistics_total_active_routes{source=\"$Node\", network_instance_name=\"default\"}",
+          "legendFormat": "Active routes",
+          "range": true,
+          "refId": "D"
+        }
+      ],
+      "title": "BGP",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "Active routes of the default network instance and MAC addresses across all MAC-VRFs.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "noValue": "-",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 8,
+        "y": 29
+      },
+      "id": 6,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "network_instance_route_table_ipv4_unicast_statistics_active_routes{source=\"$Node\", network_instance_name=\"default\"}",
+          "legendFormat": "IPv4 routes",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "network_instance_route_table_ipv6_unicast_statistics_active_routes{source=\"$Node\", network_instance_name=\"default\"}",
+          "legendFormat": "IPv6 routes",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "sum(network_instance_bridge_table_statistics_mac_type_active_entries{source=\"$Node\"}) or vector(0)",
+          "legendFormat": "MAC entries",
+          "range": true,
+          "refId": "C"
+        }
+      ],
+      "title": "Routes and MACs",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "red",
+                  "index": 0,
+                  "text": "down"
+                },
+                "1": {
+                  "color": "green",
+                  "index": 1,
+                  "text": "up"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 14,
+        "y": 29
+      },
+      "id": 7,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "network_instance_oper_state{source=\"$Node\"}",
+          "legendFormat": "{{network_instance_name}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Network instances",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 70
+              },
+              {
+                "color": "red",
+                "value": 90
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 3,
+        "x": 18,
+        "y": 29
+      },
+      "id": 8,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "platform_control_cpu_total_instant{source=\"$Node\"}",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "CPU",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 70
+              },
+              {
+                "color": "red",
+                "value": 90
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 3,
+        "x": 21,
+        "y": 29
+      },
+      "id": 9,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "platform_control_memory_utilization{source=\"$Node\"}",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Memory",
+      "type": "gauge"
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 41,
+  "tags": [
+    "gnmi",
+    "srlinux"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "definition": "label_values(interface_oper_state,source)",
+        "includeAll": true,
+        "label": "Node",
+        "multi": true,
+        "name": "Node",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(interface_oper_state,source)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "DENOG18 gRIBI",
+  "uid": "denog18-gribi",
+  "version": 1,
+  "weekStart": ""
+}
