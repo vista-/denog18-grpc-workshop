@@ -78,6 +78,7 @@ subscriptions:
   srl-grpc:
     paths:
       - /system/grpc-server[name=*]/statistics
+      - /system/grpc-server[name=*]/tls-profile
       - /system/aaa/authorization/authz-policy/counters
     mode: stream
     stream-mode: sample
@@ -87,8 +88,8 @@ subscriptions:
       - /system/information/version
       - /system/information/last-booted
       - /system/configuration/last-change
-      - /system/aaa/authorization/authz-policy/version
-      - /system/aaa/authorization/authz-policy/created-on
+      - /system/aaa/authorization/authz-policy/policy
+      - /system/tls/profile[name=*]/expiration
     mode: stream
     stream-mode: sample
     sample-interval: 5s
@@ -113,24 +114,38 @@ outputs:
       - oper-state-to-int
 
 processors:
-  # Prometheus only stores numbers: timestamps become epoch seconds, version
-  # strings become a "version" label on a metric with the value 1 and the
-  # active flag of a route becomes 1 or 0.
+  # Prometheus only stores numbers: timestamps become epoch seconds, the
+  # active flag of a route becomes 1 or 0, and names (software version, TLS
+  # profile of a gRPC server, Authz policy) become a label on a metric with
+  # the value 1.
   system-info:
     event-starlark:
       source: |
         load("time.star", "time")
 
+        def label(event, name, key, text):
+          if text:
+            event.tags[key] = text
+            event.values[name] = 1
+
+        def policy_name(policy):
+          # The policy is a JSON document that starts with its name.
+          start = policy.find('"', policy.find(":", policy.find('"name"')))
+          return policy[start + 1:policy.find('"', start + 1)]
+
         def apply(*events):
           for e in events:
             for name, value in e.values.items():
-              if name.endswith(("/last-booted", "/last-change", "/created-on")):
+              if name.endswith(("/last-booted", "/last-change", "/expiration")):
                 e.values[name] = time.parse_time(value).unix
-              elif name.endswith("/version"):
-                e.tags["version"] = value
-                e.values[name] = 1
               elif name.endswith("/active"):
                 e.values[name] = 1 if value else 0
+              elif name.endswith("/version"):
+                label(e, name, "version", value)
+              elif name.endswith("/tls-profile"):
+                label(e, name, "tls_profile", value)
+              elif name.endswith("/authz-policy/policy"):
+                label(e, name, "policy_name", policy_name(value))
           return events
 
   trim-prefixes:
