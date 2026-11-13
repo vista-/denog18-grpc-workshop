@@ -141,6 +141,9 @@ Install the default route using gRIBI.
 
 Here's the gRIBI payload for the default route.
 
+<details>
+<summary>gRIBI Solution</summary>
+
 ```yaml
 default-network-instance: default
 
@@ -169,6 +172,8 @@ operations:
       prefix: 0.0.0.0/0
       nhg: 1
 ```
+
+</details>
 
 Copy the payload to a file named `default-route.yml` and use gRIBIc to inject this route.
 
