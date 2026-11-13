@@ -1,0 +1,1396 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DENOG18 gRPC Workshop</title>
+<script>
+  try { var t = localStorage.getItem("denog18-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+</script>
+<meta name="description" content="Hands-on guide for the DENOG18 workshop on gNMI, gNOI, gNSI and gRIBI with Nokia SR Linux and Containerlab.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Albert+Sans:ital,wght@0,300;0,400;0,600;1,300&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a calm technical handbook. Neutral white pages, near-black Nokia ink, light Nokia Pure
+   headlines, square keyline containers. Each gRPC service owns one Nokia color, used only for its
+   section's accents, and a faint page tint that the background fades to as you scroll in. */
+:root {
+  --bg: #FFFFFF;
+  --surface: #FFFFFF;
+  --panel: #F4F4F4;
+  --ink: #00091B;
+  --muted: #6B6B6B;
+  --line: #DADADA;
+  --accent: #005AFF;
+  --link: #0040B8;
+  --bad: #C70000;
+  --term: #15171B;
+  --term-ink: #F2F2F2;
+  --term-dim: #9F9F9F;
+  --term-line: #2A2D33;
+  --term-id: #9DBBFF;
+
+  /* service colors: a line/fill value and a text-safe value */
+  --c-neutral: #00091B; --c-neutral-ink: #6B6B6B;
+  --c-gnmi: #005AFF;    --c-gnmi-ink: #005AFF;
+  --c-oc: #669CFF;      --c-oc-ink: #0040B8;
+  --c-gnoi: #00BBEE;    --c-gnoi-ink: #007D9F;
+  --c-gnsi: #BB55FF;    --c-gnsi-ink: #863DB8;
+  --c-gribi: #F26B43;   --c-gribi-ink: #C2461F;
+  --sec: var(--c-neutral); --sec-ink: var(--c-neutral-ink);
+
+  /* page tints, one per section */
+  --tint-basics: #FFFFFF;
+  --tint-setup: #F5F5F4;
+  --tint-gnmi: #EEF3FE;
+  --tint-oc: #F2F5FC;
+  --tint-gnoi: #ECF6F9;
+  --tint-gnsi: #F5F0FB;
+  --tint-gribi: #FCF2EE;
+  --tint-bonus: #F5F5F4;
+  --tint-reference: #FFFFFF;
+  --page: var(--tint-basics);
+
+  --font-head: "Nokia Pure Headline", "Nokia Pure Headline Light", "Albert Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-text: "Nokia Pure Text", "Nokia Pure Text Light", "Albert Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E0F12; --surface: #16181C; --panel: #1E2126; --ink: #F2F2F2; --muted: #A3A3A3; --line: #2C3036;
+    --accent: #7FA8FF; --link: #9DBBFF; --bad: #FF7B72;
+    --term: #08090B; --term-ink: #F2F2F2; --term-dim: #8C8C8C; --term-line: #24272C; --term-id: #9DBBFF;
+    --c-neutral: #F2F2F2; --c-neutral-ink: #A3A3A3;
+    --c-gnmi: #669CFF; --c-gnmi-ink: #7FA8FF; --c-oc: #669CFF; --c-oc-ink: #9DBBFF;
+    --c-gnoi: #00BBEE; --c-gnoi-ink: #66D6F5; --c-gnsi: #BB55FF; --c-gnsi-ink: #D699FF;
+    --c-gribi: #F26B43; --c-gribi-ink: #FF9B7A;
+    --tint-basics: #0E0F12; --tint-setup: #121315; --tint-gnmi: #0D1221; --tint-oc: #0F1320; --tint-gnoi: #0B1519;
+    --tint-gnsi: #150F1D; --tint-gribi: #1A110E; --tint-bonus: #121315; --tint-reference: #0E0F12;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E0F12; --surface: #16181C; --panel: #1E2126; --ink: #F2F2F2; --muted: #A3A3A3; --line: #2C3036;
+  --accent: #7FA8FF; --link: #9DBBFF; --bad: #FF7B72;
+  --term: #08090B; --term-ink: #F2F2F2; --term-dim: #8C8C8C; --term-line: #24272C; --term-id: #9DBBFF;
+  --c-neutral: #F2F2F2; --c-neutral-ink: #A3A3A3;
+  --c-gnmi: #669CFF; --c-gnmi-ink: #7FA8FF; --c-oc: #669CFF; --c-oc-ink: #9DBBFF;
+  --c-gnoi: #00BBEE; --c-gnoi-ink: #66D6F5; --c-gnsi: #BB55FF; --c-gnsi-ink: #D699FF;
+  --c-gribi: #F26B43; --c-gribi-ink: #FF9B7A;
+  --tint-basics: #0E0F12; --tint-setup: #121315; --tint-gnmi: #0D1221; --tint-oc: #0F1320; --tint-gnoi: #0B1519;
+  --tint-gnsi: #150F1D; --tint-gribi: #1A110E; --tint-bonus: #121315; --tint-reference: #0E0F12;
+  color-scheme: dark;
+}
+[data-svc="gnmi"] { --sec: var(--c-gnmi); --sec-ink: var(--c-gnmi-ink); }
+[data-svc="oc"] { --sec: var(--c-oc); --sec-ink: var(--c-oc-ink); }
+[data-svc="gnoi"] { --sec: var(--c-gnoi); --sec-ink: var(--c-gnoi-ink); }
+[data-svc="gnsi"] { --sec: var(--c-gnsi); --sec-ink: var(--c-gnsi-ink); }
+[data-svc="gribi"] { --sec: var(--c-gribi); --sec-ink: var(--c-gribi-ink); }
+body[data-section="basics"] { --page: var(--tint-basics); }
+body[data-section="setup"] { --page: var(--tint-setup); }
+body[data-section="gnmi"] { --page: var(--tint-gnmi); }
+body[data-section="openconfig"] { --page: var(--tint-oc); }
+body[data-section="gnoi"] { --page: var(--tint-gnoi); }
+body[data-section="gnsi"] { --page: var(--tint-gnsi); }
+body[data-section="gribi"] { --page: var(--tint-gribi); }
+body[data-section="bonus"] { --page: var(--tint-bonus); }
+body[data-section="reference"] { --page: var(--tint-reference); }
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+body {
+  margin: 0; background-color: var(--page); color: var(--ink);
+  font: 400 16px/1.6 var(--font-text);
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.6s ease;
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } body { transition: none; } }
+img, svg { max-width: 100%; }
+a { color: var(--link); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+code, kbd { font-family: var(--font-mono); font-size: 0.86em; }
+:not(pre) > code {
+  background: var(--panel); padding: 0.08em 0.35em; overflow-wrap: anywhere;
+  box-decoration-break: clone; -webkit-box-decoration-break: clone;
+}
+h1, h2, h3 { font-family: var(--font-head); font-weight: 300; text-wrap: balance; margin: 0; }
+p { margin: 0; }
+strong { font-weight: 600; }
+.muted { color: var(--muted); }
+
+/* ---------- title ---------- */
+.hero { border-bottom: 1px solid var(--line); }
+.hero-inner {
+  max-width: 1200px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 72px 64px;
+  display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 72px; align-items: end;
+}
+.eyebrow { font-size: 15px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 20px; }
+.hero h1 { font-size: clamp(36px, 4.6vw, 58px); line-height: 1.1; letter-spacing: -0.012em; margin-top: 20px; }
+.hero h1 .thin { display: block; color: var(--muted); }
+.hero .lede { margin-top: 26px; font-size: 18px; font-weight: 300; line-height: 1.6; max-width: 33em; }
+.hosts { margin-top: 20px; font-size: 15px; color: var(--muted); }
+.hosts strong { color: var(--ink); font-weight: 400; }
+
+.stack { display: grid; gap: 6px; font-size: 14px; }
+.svc-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.svc-tile {
+  border: 1px solid var(--ink); padding: 14px 12px 16px; color: var(--ink); text-decoration: none;
+  display: grid; gap: 6px; align-content: start; background: var(--surface);
+}
+.svc-tile:hover { background: var(--panel); }
+.svc-name { font: 300 24px/1 var(--font-head); color: var(--sec-ink); }
+.svc-what { font-size: 13px; line-height: 1.4; color: var(--muted); }
+.svc-tool { font: 400 12px/1.3 var(--font-mono); color: var(--muted); margin-top: 2px; }
+.layer {
+  border: 1px solid var(--line); padding: 11px 14px; background: var(--surface);
+  display: flex; justify-content: space-between; gap: 12px; align-items: baseline; flex-wrap: wrap;
+}
+.layer b { font: 400 17px/1.2 var(--font-head); }
+.layer span { color: var(--muted); font-size: 13px; }
+.layer.grpc { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.layer.grpc span { color: var(--bg); opacity: 0.75; }
+
+/* ---------- page frame ---------- */
+.shell {
+  max-width: 1200px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 56px 112px;
+  display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 64px; align-items: start;
+}
+.index { position: sticky; top: 24px; display: grid; gap: 22px; font-size: 15px; }
+.index-title { font-size: 13px; color: var(--muted); }
+.index ol { list-style: none; margin: 0; padding: 0; display: grid; border-top: 1px solid var(--line); }
+.index a {
+  display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; align-items: baseline; gap: 6px;
+  padding: 9px 2px; color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line);
+}
+.index a:hover { color: var(--link); }
+.index a.active { font-weight: 600; }
+.index .no { font: 400 13px/1 var(--font-head); color: var(--sec-ink); font-variant-numeric: tabular-nums; }
+.index .count { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; font-weight: 400; }
+.index .count.complete { color: var(--accent); }
+
+.theme-switch { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--line); background: var(--surface); }
+.theme-switch button {
+  font: 400 14px/1 var(--font-text); padding: 10px 8px; border: 0; border-radius: 0; cursor: pointer;
+  background: transparent; color: var(--ink);
+}
+.theme-switch button + button { border-left: 1px solid var(--line); }
+.theme-switch button:hover { background: var(--panel); }
+.theme-switch button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.idbox { border: 1px solid var(--line); background: var(--surface); padding: 16px; display: grid; gap: 8px; }
+.idbox label { font-size: 14px; font-weight: 600; }
+.idbox input {
+  font: 400 18px/1 var(--font-mono); padding: 10px 12px; border: 1px solid var(--ink); border-radius: 0;
+  background: var(--bg); color: var(--ink); width: 100%;
+}
+.idbox input::placeholder { color: var(--muted); }
+.idbox small { color: var(--muted); font-size: 13px; line-height: 1.45; }
+
+main { min-width: 0; display: grid; gap: 120px; }
+
+/* ---------- section openers ---------- */
+.section { display: grid; gap: 24px; scroll-margin-top: 16px; }
+.section-head { display: grid; gap: 10px; padding-top: 20px; border-top: 3px solid var(--sec); margin-bottom: 8px; }
+.section-no { font-size: 15px; color: var(--sec-ink); }
+.section h2 { font-size: clamp(32px, 3.8vw, 48px); line-height: 1.1; letter-spacing: -0.01em; }
+.section h2 small { display: block; font-size: 0.4em; letter-spacing: 0; margin-top: 10px; color: var(--muted); }
+.intro { font-size: 18px; font-weight: 300; max-width: 38em; margin-top: 8px; }
+.prose { display: grid; gap: 14px; max-width: 44em; }
+
+/* keyline grids with shared borders */
+.facts, .cards2, .agenda { display: grid; border-top: 1px solid var(--line); border-left: 1px solid var(--line); background: var(--surface); }
+.facts { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+.cards2 { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.agenda { grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); }
+.fact, .card, .slot { border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); min-width: 0; }
+.fact { padding: 14px 16px; display: grid; gap: 4px; }
+.fact dt { font-size: 13px; color: var(--muted); }
+.fact dd { margin: 0; font-size: 15px; }
+.card { padding: 20px 22px 22px; display: grid; gap: 10px; align-content: start; }
+.card h3 { font-size: 22px; }
+.card ul { margin: 0; padding-left: 1.1em; display: grid; gap: 5px; font-size: 15px; }
+.slot { padding: 12px 14px; display: grid; gap: 2px; }
+.slot time { font: 300 24px/1.1 var(--font-head); font-variant-numeric: tabular-nums; color: var(--sec-ink); }
+.slot span { font-size: 14px; }
+.slot.break { color: var(--muted); }
+.slot.break time { color: var(--muted); }
+
+/* ---------- steps ---------- */
+.step {
+  border: 1px solid var(--line); background: var(--surface); padding: 26px 28px 28px;
+  display: grid; gap: 16px; scroll-margin-top: 16px; min-width: 0;
+}
+.step-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: baseline; }
+.step-no { font: 400 16px/1 var(--font-head); color: var(--sec-ink); font-variant-numeric: tabular-nums; }
+.step h3 { font-size: 24px; line-height: 1.2; }
+.done { display: inline-flex; align-items: center; gap: 7px; font-size: 14px; color: var(--muted); cursor: pointer; user-select: none; white-space: nowrap; }
+.done input { width: 16px; height: 16px; accent-color: var(--sec); margin: 0; cursor: pointer; }
+.step.is-done { border-color: var(--sec); }
+.step.is-done .done { color: var(--sec-ink); }
+.step p, .step li { max-width: 46em; }
+.step ul, .step ol { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
+
+.term { background: var(--term); min-width: 0; }
+.term-bar {
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  padding: 7px 8px 7px 16px; border-bottom: 1px solid var(--term-line); font-size: 12.5px; color: var(--term-dim);
+}
+.copy {
+  font: 400 12.5px/1 var(--font-text); color: var(--term-ink); background: transparent;
+  border: 1px solid var(--term-line); border-radius: 0; padding: 6px 12px; cursor: pointer;
+}
+.copy:hover { border-color: var(--term-dim); }
+.copy.copied { color: var(--term); background: var(--term-ink); border-color: var(--term-ink); }
+.term pre, .out pre { margin: 0; padding: 16px; overflow-x: auto; font: 400 13.5px/1.65 var(--font-mono); tab-size: 2; }
+.term pre { color: var(--term-ink); }
+.term .c { color: var(--term-dim); }
+.vmid { color: var(--term-id); }
+.out .vmid, .fact .vmid, .step p .vmid, .kv .vmid { color: var(--accent); }
+
+.out { background: var(--panel); min-width: 0; }
+.out-label { padding: 12px 16px 0; font-size: 13px; color: var(--muted); }
+.out.fail .out-label { color: var(--bad); }
+.out pre { color: var(--ink); padding-top: 6px; font-size: 13px; }
+.out .hl { font-weight: 600; text-decoration: underline; text-decoration-color: var(--sec); text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.out .c { color: var(--muted); }
+details.more { border: 1px solid var(--line); background: var(--surface); }
+details.more > summary { cursor: pointer; padding: 12px 16px; font-size: 15px; }
+details.more > .out, details.more > .term, details.more > div, details.more > .proto { margin: 0 14px 14px; }
+details.more[open] > summary { border-bottom: 1px solid var(--line); margin-bottom: 14px; }
+
+.note, .watch, .warn { padding: 14px 16px; font-size: 15px; display: grid; gap: 4px; }
+.note { background: var(--panel); }
+.watch { border: 1px solid var(--line); }
+.warn { border: 1px solid var(--bad); }
+.note b, .watch b, .warn b { font-size: 13.5px; font-weight: 600; }
+.watch b { color: var(--sec-ink); }
+.watch b::before { content: ""; display: inline-block; width: 9px; height: 9px; background: var(--sec); margin-right: 8px; }
+.warn b { color: var(--bad); }
+
+table.kv { border-collapse: collapse; width: 100%; font-size: 14.5px; background: var(--surface); }
+table.kv th, table.kv td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.kv th { font-size: 13px; font-weight: 600; color: var(--muted); border-bottom-color: var(--ink); }
+table.kv td:first-child { white-space: nowrap; }
+.table-wrap { overflow-x: auto; }
+
+/* ---------- diagrams ---------- */
+.figure { border: 1px solid var(--line); background: var(--surface); padding: 20px; margin: 0; display: grid; gap: 12px; }
+.figure figcaption { font-size: 14px; color: var(--muted); }
+.topo { width: 100%; height: auto; display: block; }
+.topo .node rect { fill: var(--surface); stroke: var(--ink); stroke-width: 1.2; }
+.topo .node.client rect { stroke: var(--muted); stroke-dasharray: 4 3; }
+.topo .node.tele rect { fill: var(--panel); stroke: var(--line); }
+.topo .name { font: 400 15px var(--font-head); fill: var(--ink); }
+.topo .sub { font: 400 11px var(--font-mono); fill: var(--muted); }
+.topo .link { stroke: var(--ink); stroke-width: 1.2; }
+.topo .link.l2 { stroke: var(--muted); }
+.topo .link.direct { stroke: var(--ink); stroke-width: 1.2; }
+.topo .link.flow { stroke: var(--muted); stroke-dasharray: 5 4; stroke-width: 1; fill: none; }
+.topo .ifl { font: 600 10.5px var(--font-mono); fill: var(--ink); }
+.topo .net { font: 400 10.5px var(--font-mono); fill: var(--muted); }
+.topo .ip { font: 400 10.5px var(--font-mono); fill: var(--ink); }
+.topo .path-before { stroke: var(--muted); stroke-width: 2; stroke-dasharray: 2 5; stroke-linecap: round; fill: none; }
+.topo .path-after { stroke: var(--sec); stroke-width: 3; stroke-dasharray: 2 6; stroke-linecap: round; fill: none; }
+
+.proto { font: 400 13px/1.6 var(--font-mono); background: var(--panel); padding: 14px 16px; overflow-x: auto; margin: 0; }
+
+footer.end {
+  border-top: 1px solid var(--line); color: var(--muted); font-size: 14px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 44px;
+}
+footer.end div { max-width: 1200px; margin: 0 auto; }
+
+@media (max-width: 1000px) {
+  .hero-inner { grid-template-columns: minmax(0, 1fr); gap: 40px; padding-block: 48px 44px; }
+}
+@media (max-width: 900px) {
+  .shell { grid-template-columns: minmax(0, 1fr); gap: 40px; padding-block: 32px 80px; }
+  .index { position: static; }
+  .index ol { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); column-gap: 16px; }
+  main { gap: 88px; }
+}
+@media (max-width: 560px) {
+  .svc-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .step { padding: 20px 16px 22px; }
+  .step-head { grid-template-columns: auto minmax(0, 1fr); }
+  .step-head .done { grid-column: 1 / -1; }
+  .term pre, .out pre { font-size: 12.5px; }
+}
+</style>
+</head>
+<body data-section="basics">
+
+<header class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="eyebrow"><span>DENOG18 workshop</span><span>Sun 15 Nov 2026</span><span>Haus der Technik, Essen</span></div>
+      <h1>Mastering gRPC <span class="thin">for network management, monitoring and automation</span></h1>
+      <p class="lede">Today you run your own small data center fabric and drive it entirely over gRPC: configure it, stream its state, back it up, lock it down and steer its traffic. This page walks you through every step, with the commands to run and the output you should see.</p>
+      <p class="hosts">With <strong>Mathis Bramkamp</strong>, <strong>Gordon Gidófalvy</strong> and <strong>Florian Schwarz</strong>. Stuck? Raise your hand.</p>
+    </div>
+    <div class="stack" aria-label="The gRPC service stack">
+      <div class="svc-row">
+        <a class="svc-tile" data-svc="gnmi" href="#gnmi"><span class="svc-name">gNMI</span><span class="svc-what">Configuration, state and streaming telemetry</span><span class="svc-tool">gnmic</span></a>
+        <a class="svc-tile" data-svc="gnoi" href="#gnoi"><span class="svc-name">gNOI</span><span class="svc-what">Operations: files, ping, health, OS</span><span class="svc-tool">gnoic</span></a>
+        <a class="svc-tile" data-svc="gnsi" href="#gnsi"><span class="svc-name">gNSI</span><span class="svc-what">Security: who may call what, and certificates</span><span class="svc-tool">gnsic</span></a>
+        <a class="svc-tile" data-svc="gribi" href="#gribi"><span class="svc-name">gRIBI</span><span class="svc-what">Routing: inject entries into RIB and FIB</span><span class="svc-tool">gribic</span></a>
+      </div>
+      <div class="layer grpc"><b>gRPC</b><span>remote procedure calls with typed requests and replies</span></div>
+      <div class="layer"><b>Protocol Buffers</b><span>compact binary messages, defined by a schema</span></div>
+      <div class="layer"><b>HTTP/2</b><span>one long-lived connection carrying many streams</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+  <nav class="index" aria-label="Sections">
+    <div class="theme-switch" role="group" aria-label="Color theme">
+      <button type="button" data-theme-choice="light" aria-pressed="false">Light</button>
+      <button type="button" data-theme-choice="dark" aria-pressed="false">Dark</button>
+    </div>
+    <div class="idbox">
+      <label for="vm-id">Your workshop ID</label>
+      <input id="vm-id" type="text" inputmode="text" autocomplete="off" spellcheck="false" maxlength="20" placeholder="e.g. 17">
+      <small>From the note on your seat. It fills in your hostnames and URLs on this page.</small>
+    </div>
+    <div class="index-title">Sections</div>
+    <ol>
+      <li><a href="#basics" data-svc="setup"><span class="no"></span><span>Background</span><span class="count"></span></a></li>
+      <li><a href="#setup" data-svc="setup"><span class="no">0</span><span>Get set up</span><span class="count" data-count="setup"></span></a></li>
+      <li><a href="#gnmi" data-svc="gnmi"><span class="no">1</span><span>gNMI</span><span class="count" data-count="gnmi"></span></a></li>
+      <li><a href="#openconfig" data-svc="oc"><span class="no">2</span><span>OpenConfig</span><span class="count" data-count="oc"></span></a></li>
+      <li><a href="#gnoi" data-svc="gnoi"><span class="no">3</span><span>gNOI</span><span class="count" data-count="gnoi"></span></a></li>
+      <li><a href="#gnsi" data-svc="gnsi"><span class="no">4</span><span>gNSI</span><span class="count" data-count="gnsi"></span></a></li>
+      <li><a href="#gribi" data-svc="gribi"><span class="no">5</span><span>gRIBI</span><span class="count" data-count="gribi"></span></a></li>
+      <li><a href="#bonus" data-svc="bonus"><span class="no">+</span><span>Bonus</span><span class="count" data-count="bonus"></span></a></li>
+      <li><a href="#reference" data-svc="setup"><span class="no"></span><span>Cheat sheet</span><span class="count"></span></a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+    <!-- ===================== BACKGROUND ===================== -->
+    <section class="section" id="basics" data-svc="setup">
+      <div class="section-head">
+        <span class="section-no">Before you start</span>
+        <h2>The ten-minute background<small>What gRPC, Protobuf, YANG and OpenConfig have to do with each other</small></h2>
+      </div>
+
+      <div class="agenda" aria-label="Agenda">
+        <div class="slot" data-svc="setup"><time>11:00</time><span>Intro and setup</span></div>
+        <div class="slot" data-svc="gnmi"><time>11:30</time><span>gNMI and OpenConfig</span></div>
+        <div class="slot break"><time>12:30</time><span>Lunch</span></div>
+        <div class="slot" data-svc="gnoi"><time>13:30</time><span>gNOI</span></div>
+        <div class="slot" data-svc="gnsi"><time>14:30</time><span>gNSI</span></div>
+        <div class="slot break"><time>15:00</time><span>Coffee</span></div>
+        <div class="slot" data-svc="gribi"><time>15:45</time><span>gRIBI</span></div>
+        <div class="slot" data-svc="bonus"><time>16:15</time><span>Bonus and wrap-up</span></div>
+      </div>
+      <p class="muted" style="font-size:13.5px">Times are approximate. Work at your own pace; every section stands on its own once the lab is up.</p>
+
+      <div class="cards2">
+        <div class="card">
+          <h3>gRPC</h3>
+          <p>A framework for calling functions on a remote machine. It runs over HTTP/2, but you never see HTTP: no URLs, no verbs, just named RPCs such as <code>Get</code>, <code>Set</code> or <code>Subscribe</code>. One connection can carry many parallel streams, which is what makes streaming telemetry cheap.</p>
+        </div>
+        <div class="card">
+          <h3>Protocol Buffers</h3>
+          <p>The message format gRPC uses. A schema describes each message, and the data goes over the wire in a compact binary form that is fast to parse and has clients in every common language.</p>
+<pre class="proto">syntax = "proto3";
+message InterfaceStats {
+  string if_name   = 1;
+  uint64 in_octets = 2;
+}</pre>
+        </div>
+        <div class="card">
+          <h3>YANG</h3>
+          <p>The language that describes what a device can be configured with and what state it reports. Every gNMI path you use today, like <code>/interface[name=ethernet-1/1]/mtu</code>, is a walk through a YANG model.</p>
+        </div>
+        <div class="card">
+          <h3>OpenConfig</h3>
+          <p>Vendor-neutral YANG models written by network operators and published on GitHub. Where they don't cover a feature yet, you fill the gap with the vendor's native models. You will do exactly that in section 2.</p>
+        </div>
+      </div>
+
+      <div class="prose">
+        <p><strong>Containerlab</strong> turns a short YAML file into a running lab of containers and wires them together. <strong>Nokia SR Linux</strong>, the switch OS in the lab, is modelled in YANG from the ground up, so everything you can do in its CLI you can also do over gRPC.</p>
+      </div>
+
+      <figure class="figure">
+        <svg class="topo" viewBox="0 0 760 470" role="img" aria-labelledby="topo-title">
+          <title id="topo-title">Lab topology: spine connected to leaf1 and leaf2, each leaf connected to a client, plus a telemetry stack</title>
+          <!-- links -->
+          <line class="link" x1="300" y1="102" x2="150" y2="210"/>
+          <line class="link" x1="340" y1="102" x2="490" y2="210"/>
+          <line class="link l2" x1="150" y1="272" x2="150" y2="362"/>
+          <line class="link l2" x1="490" y1="272" x2="490" y2="362"/>
+          <!-- interface and subnet labels -->
+          <text class="ifl" x="252" y="112">e1-1</text>
+          <text class="ifl" x="360" y="114">e1-2</text>
+          <text class="ifl" x="120" y="204">e1-1</text>
+          <text class="ifl" x="492" y="204">e1-2</text>
+          <text class="net" x="122" y="160" transform="rotate(-36 122 160)">192.168.10.2/31</text>
+          <text class="net" x="428" y="134" transform="rotate(36 428 134)">192.168.20.2/31</text>
+          <text class="ifl" x="158" y="290">e1-10</text>
+          <text class="ifl" x="498" y="290">e1-10</text>
+          <text class="ifl" x="158" y="356">eth1</text>
+          <text class="ifl" x="498" y="356">eth1</text>
+          <text class="net" x="320" y="320" text-anchor="middle">172.16.10.0/24 · one L2 segment over EVPN-VXLAN</text>
+          <text class="net" x="320" y="335" text-anchor="middle">(after section 2)</text>
+          <!-- nodes -->
+          <g class="node"><rect x="250" y="38" width="140" height="64"/><text class="name" x="320" y="60" text-anchor="middle">spine</text><text class="sub" x="320" y="77" text-anchor="middle">lo 3.3.3.3</text><text class="sub" x="320" y="92" text-anchor="middle">mgmt 172.20.20.3</text></g>
+          <g class="node"><rect x="80" y="210" width="140" height="62"/><text class="name" x="150" y="232" text-anchor="middle">leaf1</text><text class="sub" x="150" y="249" text-anchor="middle">lo 1.1.1.1</text><text class="sub" x="150" y="264" text-anchor="middle">mgmt 172.20.20.2</text></g>
+          <g class="node"><rect x="420" y="210" width="140" height="62"/><text class="name" x="490" y="232" text-anchor="middle">leaf2</text><text class="sub" x="490" y="249" text-anchor="middle">lo 2.2.2.2</text><text class="sub" x="490" y="264" text-anchor="middle">mgmt 172.20.20.4</text></g>
+          <g class="node client"><rect x="80" y="362" width="140" height="52"/><text class="name" x="150" y="385" text-anchor="middle">client1</text><text class="sub" x="150" y="403" text-anchor="middle">172.16.10.50</text></g>
+          <g class="node client"><rect x="420" y="362" width="140" height="52"/><text class="name" x="490" y="385" text-anchor="middle">client3</text><text class="sub" x="490" y="403" text-anchor="middle">172.16.10.60</text></g>
+          <!-- telemetry stack -->
+          <text class="net" x="610" y="34">telemetry stack</text>
+          <g class="node tele"><rect x="610" y="44" width="130" height="44"/><text class="name" x="675" y="64" text-anchor="middle" style="font-size:13px">gnmic</text><text class="sub" x="675" y="80" text-anchor="middle">gNMI subscriptions</text></g>
+          <g class="node tele"><rect x="610" y="118" width="130" height="44"/><text class="name" x="675" y="138" text-anchor="middle" style="font-size:13px">Prometheus</text><text class="sub" x="675" y="154" text-anchor="middle">:9090</text></g>
+          <g class="node tele"><rect x="610" y="192" width="130" height="44"/><text class="name" x="675" y="212" text-anchor="middle" style="font-size:13px">Grafana</text><text class="sub" x="675" y="228" text-anchor="middle">:3000</text></g>
+          <path class="link flow" d="M675 88 V118 M675 162 V192"/>
+          <path class="link flow" d="M610 66 C 520 66, 470 66, 390 66"/>
+          <text class="net" x="430" y="58">streams</text>
+          <text class="net" x="20" y="455">all nodes also sit on the management network 172.20.20.0/24</text>
+        </svg>
+        <figcaption>Your lab: three SR Linux switches in a leaf-spine fabric, two Linux clients, and a telemetry stack that collects everything over gNMI. Loopbacks are added in section 1, BGP and the client segment in section 2.</figcaption>
+      </figure>
+    </section>
+
+    <!-- ===================== 0 SETUP ===================== -->
+    <section class="section" id="setup" data-svc="setup">
+      <div class="section-head">
+        <span class="section-no">Section 0</span>
+        <h2>Get set up<small>Log in, deploy your lab, meet the switches</small></h2>
+      </div>
+
+      <dl class="facts">
+        <div class="fact"><dt>Your VM</dt><dd><code><span class="vmid">&lt;id&gt;</span>.denog.dcf.network</code></dd></div>
+        <div class="fact"><dt>SSH</dt><dd>port <code>2222</code>, user <code>admin</code></dd></div>
+        <div class="fact"><dt>VS Code in the browser</dt><dd>port <code>8443</code>, same password</dd></div>
+        <div class="fact"><dt>VM password</dt><dd>shown on screen during the intro</dd></div>
+      </dl>
+
+      <article class="step" id="s0-1">
+        <header class="step-head"><span class="step-no">0.1</span><h3>Log in to your VM</h3><label class="done"><input type="checkbox" id="done-0-1" data-sec="setup"> Done</label></header>
+        <p>Use SSH from your terminal, or open VS Code in your browser if you prefer an editor and a terminal side by side.</p>
+        <div class="term"><div class="term-bar"><span class="where">Your laptop</span><button class="copy" type="button">Copy</button></div><pre><code>ssh -p 2222 admin@<span class="vmid">&lt;id&gt;</span>.denog.dcf.network</code></pre></div>
+        <p>Or browse to <code>https://<span class="vmid">&lt;id&gt;</span>.denog.dcf.network:8443</code>. To connect your own VS Code with Remote SSH, use port 2222, not 8443.</p>
+        <div class="warn"><b>Save your work</b><p>The VMs are deleted right after the workshop. Copy anything you want to keep, or clone the repository at home later.</p></div>
+      </article>
+
+      <article class="step" id="s0-2">
+        <header class="step-head"><span class="step-no">0.2</span><h3>Deploy the lab</h3><label class="done"><input type="checkbox" id="done-0-2" data-sec="setup"> Done</label></header>
+        <p>Get the workshop repository and start the lab. If the folder is already on your VM, skip the clone.</p>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>git clone https://github.com/vista-/denog18-grpc-workshop
+cd denog18-grpc-workshop
+sudo clab deploy -t denog18-grpc.clab.yml</code></pre></div>
+        <p>Containerlab pulls the images if needed and starts eight containers. This takes about a minute.</p>
+        <div class="out"><div class="out-label">You should see</div><pre>╭────────────┬───────────────────────────────────────┬─────────┬──────────────╮
+│    Name    │               Kind/Image              │  State  │ IPv4 Address │
+├────────────┼───────────────────────────────────────┼─────────┼──────────────┤
+│ client1    │ linux                                 │ running │ 172.20.20.10 │
+│ client3    │ linux                                 │ running │ 172.20.20.12 │
+│ gnmic      │ ghcr.io/openconfig/gnmic:0.49.1       │ running │ …            │
+│ grafana    │ grafana/grafana:13.3.1                │ running │ …            │
+│ leaf1      │ ghcr.io/nokia/srlinux:26.7.1          │ running │ 172.20.20.2  │
+│ leaf2      │ ghcr.io/nokia/srlinux:26.7.1          │ running │ 172.20.20.4  │
+│ prometheus │ quay.io/prometheus/prometheus:v3.16.0 │ running │ …            │
+│ spine      │ ghcr.io/nokia/srlinux:26.7.1          │ running │ 172.20.20.3  │
+╰────────────┴───────────────────────────────────────┴─────────┴──────────────╯</pre></div>
+        <p class="muted">Lost the table? <code>sudo clab inspect --all</code> prints it again.</p>
+      </article>
+
+      <article class="step" id="s0-3">
+        <header class="step-head"><span class="step-no">0.3</span><h3>Check your four gRPC clients</h3><label class="done"><input type="checkbox" id="done-0-3" data-sec="setup"> Done</label></header>
+        <p>One command-line client per service is installed on the VM. Run every <code>gnmic</code>, <code>gnoic</code>, <code>gnsic</code> and <code>gribic</code> command from the VM itself, never inside the client containers.</p>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>gnmic version
+gnoic version
+gnsic version
+gribic version</code></pre></div>
+        <div class="out"><div class="out-label">You should see</div><pre>version : 0.4x.x
+ commit : …
+   date : …
+ gitURL : https://github.com/openconfig/gnmic
+<span class="c">… one block like this per client</span></pre></div>
+      </article>
+
+      <article class="step" id="s0-4">
+        <header class="step-head"><span class="step-no">0.4</span><h3>Log in to a switch and test a link</h3><label class="done"><input type="checkbox" id="done-0-4" data-sec="setup"> Done</label></header>
+        <p>The switches use the SR Linux default login: <code>admin</code> / <code>NokiaSrl1!</code>. Containerlab added the node names to your VM's hosts file, so you can use them directly.</p>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>ssh admin@spine</code></pre></div>
+        <p>SR Linux runs <code>ping</code> in the management network instance unless you say otherwise. The fabric links live in <code>default</code>:</p>
+        <div class="term"><div class="term-bar"><span class="where">spine CLI</span><button class="copy" type="button">Copy</button></div><pre><code>ping -c 3 192.168.10.2 network-instance default
+ping6 -c 3 192:168:10::2 network-instance default</code></pre></div>
+        <div class="out"><div class="out-label">You should see</div><pre>3 packets transmitted, <span class="hl">3 received</span>, 0% packet loss</pre></div>
+        <p>IPv6 follows the IPv4 plan: replace the dots with colons, and the last dot with two. The /31 links are /127 in IPv6.</p>
+      </article>
+
+      <article class="step" id="s0-5">
+        <header class="step-head"><span class="step-no">0.5</span><h3>Meet the two gRPC servers</h3><label class="done"><input type="checkbox" id="done-0-5" data-sec="setup"> Done</label></header>
+        <p>Each switch runs two gRPC servers with the same services. You will use both today, so it helps to know which is which.</p>
+        <div class="term"><div class="term-bar"><span class="where">leaf1 CLI</span><button class="copy" type="button">Copy</button></div><pre><code>info system grpc-server mgmt
+info system grpc-server insecure-mgmt</code></pre></div>
+        <div class="out"><div class="out-label">You should see (for mgmt)</div><pre>    admin-state enable
+    rate-limit 65000
+    <span class="hl">tls-profile clab-profile</span>
+    network-instance mgmt
+    services [
+        gnmi
+        gnoi
+        gnsi
+        gribi
+        p4rt
+    ]</pre></div>
+        <div class="table-wrap"><table class="kv">
+          <thead><tr><th>Server</th><th>Port</th><th>Transport</th><th>Client flags</th></tr></thead>
+          <tbody>
+            <tr><td><code>mgmt</code></td><td><code>57400</code> (default)</td><td>TLS, certificate from Containerlab's CA</td><td><code>--skip-verify</code>, or <code>--tls-ca</code> once you trust the CA</td></tr>
+            <tr><td><code>insecure-mgmt</code></td><td><code>57401</code></td><td>plain text, lab use only</td><td><code>-a leaf1:57401 --insecure</code></td></tr>
+          </tbody>
+        </table></div>
+        <p class="muted">On a factory-default production switch only <code>mgmt</code> exists, and not every service is enabled. Containerlab set this up for the lab.</p>
+      </article>
+
+      <article class="step" id="s0-6">
+        <header class="step-head"><span class="step-no">0.6</span><h3>Open the Grafana dashboard</h3><label class="done"><input type="checkbox" id="done-0-6" data-sec="setup"> Done</label></header>
+        <p>Browse to <code>http://<span class="vmid">&lt;id&gt;</span>.denog.dcf.network:3000</code> and log in with <code>admin</code> / <code>admin</code>. Skip the password change and open the <strong>DENOG18</strong> dashboard.</p>
+        <p>It is fed entirely by gNMI streaming telemetry: gnmic subscribes to all three switches, Prometheus stores the numbers, Grafana draws them. Leave it open in a tab. Most of what you do today shows up there within a few seconds.</p>
+        <ul>
+          <li><strong>Network topology</strong> colors each link half by its traffic rate and each port by its oper-state.</li>
+          <li><strong>Front panel view</strong> shows the cabled ports on each 7220 IXR-D2L faceplate.</li>
+          <li><strong>One row per switch</strong> lists the gRPC calls it has served, rejected calls, the installed Authz policy, the gRPC certificate, the last config change, BGP and more. Use the <strong>Node</strong> selector at the top to pick switches.</li>
+        </ul>
+      </article>
+    </section>
+
+    <!-- ===================== 1 gNMI ===================== -->
+    <section class="section" id="gnmi" data-svc="gnmi">
+      <div class="section-head">
+        <span class="section-no">Section 1 · gNMI</span>
+        <h2>Configure, read and stream<small>gRPC Network Management Interface</small></h2>
+        <p class="intro">gNMI replaces the patchwork of CLI scraping, SNMP polling and syslog parsing with one model-driven interface. It has four RPCs: <strong>Capabilities</strong>, <strong>Get</strong>, <strong>Set</strong> and <strong>Subscribe</strong>.</p>
+      </div>
+
+      <article class="step" id="s1-1">
+        <header class="step-head"><span class="step-no">1.1</span><h3>Ask the switch what it supports</h3><label class="done"><input type="checkbox" id="done-1-1" data-sec="gnmi"> Done</label></header>
+        <p><strong>Capabilities</strong> lists the YANG models and encodings the device understands. A reply also proves that gNMI is up and that your credentials work.</p>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure cap</code></pre></div>
+        <div class="out"><div class="out-label">You should see</div><pre>gNMI version: 0.10.0
+supported models:
+  - urn:nokia.com:srlinux:aaa:aaa:srl_nokia-aaa, Nokia, 2026-07-31
+  <span class="c">… several hundred more</span>
+supported encodings:
+  - JSON_IETF
+  - PROTO
+  - ASCII</pre></div>
+      </article>
+
+      <article class="step" id="s1-2">
+        <header class="step-head"><span class="step-no">1.2</span><h3>Read configuration and state with Get</h3><label class="done"><input type="checkbox" id="done-1-2" data-sec="gnmi"> Done</label></header>
+        <p>Every request names a <em>path</em> into the YANG tree. Find paths in the <a href="https://yangbrowser.nokia.com/srlinux" target="_blank" rel="noopener">Nokia YANG Browser</a>, or let the switch tell you: go to the object in the CLI and ask for its XPath.</p>
+        <div class="term"><div class="term-bar"><span class="where">leaf1 CLI</span><button class="copy" type="button">Copy</button></div><pre><code>interface ethernet-1/1
+pwc xpath</code></pre></div>
+        <div class="out"><div class="out-label">You should see</div><pre>/interface[name=ethernet-1/1]</pre></div>
+        <p>Now fetch that interface's configuration over gNMI:</p>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure --encoding json_ietf \
+  get --path /interface[name=ethernet-1/1] --type config</code></pre></div>
+        <p>Leave out <code>--type config</code> and you get operational state, which is gnmic's default. Here is the state of the client-facing port:</p>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure --encoding json_ietf \
+  get --path /interface[name=ethernet-1/10]/oper-state</code></pre></div>
+        <div class="out"><div class="out-label">You should see</div><pre>"updates": [
+  {
+    "Path": "srl_nokia-interfaces:interface[name=ethernet-1/10]/oper-state",
+    "values": {
+      "srl_nokia-interfaces:interface/oper-state": <span class="hl">"up"</span>
+    }
+  }
+]</pre></div>
+      </article>
+
+      <article class="step" id="s1-3">
+        <header class="step-head"><span class="step-no">1.3</span><h3>Change one value with Set</h3><label class="done"><input type="checkbox" id="done-1-3" data-sec="gnmi"> Done</label></header>
+        <p><strong>Set</strong> changes configuration and commits it in the same call. The quickest form packs path, type and value into one argument: <code>path:::type:::value</code>.</p>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure \
+  set --update /interface[name=ethernet-1/10]/mtu:::json:::4000</code></pre></div>
+        <div class="out"><div class="out-label">You should see</div><pre>"results": [
+  {
+    "operation": <span class="hl">"UPDATE"</span>,
+    "path": "interface[name=ethernet-1/10]/mtu"
+  }
+]</pre></div>
+        <p>The same change with separate path and value, this time over the TLS server on 57400:</p>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>gnmic -a leaf1 -u admin -p NokiaSrl1! --skip-verify --encoding json_ietf \
+  set --update-path /interface[name=ethernet-1/10]/mtu --update-value 3600</code></pre></div>
+        <p>Read the MTU back with Get. It should say 3600.</p>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure --encoding json_ietf \
+  get --path /interface[name=ethernet-1/10]/mtu</code></pre></div>
+        <aside class="watch"><b>On the dashboard</b><p>In the leaf1 row, <em>Config changed</em> drops to "a few seconds ago", <em>Interface MTU</em> shows the new value for e1-10, and <em>gRPC calls</em> counts your gNMI Set.</p></aside>
+      </article>
+
+      <article class="step" id="s1-4">
+        <header class="step-head"><span class="step-no">1.4</span><h3>Push a file: loopbacks on all three switches</h3><label class="done"><input type="checkbox" id="done-1-4" data-sec="gnmi"> Done</label></header>
+        <p>For more than a leaf or two, put the configuration in a JSON file. These files configure the <code>system0</code> loopback that BGP will use later. Run them from the repository folder, because the paths are relative.</p>
+        <div class="table-wrap"><table class="kv"><thead><tr><th>Switch</th><th>Loopback</th></tr></thead><tbody><tr><td><code>leaf1</code></td><td>1.1.1.1/32</td></tr><tr><td><code>leaf2</code></td><td>2.2.2.2/32</td></tr><tr><td><code>spine</code></td><td>3.3.3.3/32</td></tr></tbody></table></div>
+        <div class="term"><div class="term-bar"><span class="where">VM shell · in denog18-grpc-workshop</span><button class="copy" type="button">Copy</button></div><pre><code>gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure --encoding json_ietf \
+  set --update-path /interface[name=system0] --update-file gnmi/leaf1-system.cfg
+gnmic -a leaf2:57401 -u admin -p NokiaSrl1! --insecure --encoding json_ietf \
+  set --update-path /interface[name=system0] --update-file gnmi/leaf2-system.cfg
+gnmic -a spine:57401 -u admin -p NokiaSrl1! --insecure --encoding json_ietf \
+  set --update-path /interface[name=system0] --update-file gnmi/spine-system.cfg</code></pre></div>
+        <div class="out"><div class="out-label">You should see, three times</div><pre>"operation": "UPDATE",
+"path": "interface[name=system0]"</pre></div>
+        <div class="note"><b>Tip</b><p>To turn existing configuration into such a file, run <code>info interface ethernet-1/1 | as json</code> in the SR Linux CLI.</p></div>
+      </article>
+
+      <article class="step" id="s1-5">
+        <header class="step-head"><span class="step-no">1.5</span><h3>Update or replace? The SNMP experiment</h3><label class="done"><input type="checkbox" id="done-1-5" data-sec="gnmi"> Done</label></header>
+        <p>An <em>update</em> merges your data into what is there. A <em>replace</em> deletes everything under the path first, then writes your data, in one commit. Watch the difference with a new SNMP community.</p>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code><span class="c"># 1. what is configured now</span>
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure --encoding json_ietf \
+  get --path /system/snmp --type config
+
+<span class="c"># 2. merge the new community in</span>
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure --encoding json_ietf \
+  set --update-path /system/snmp --update-file gnmi/leaf1-snmp.cfg</code></pre></div>
+        <p>Run the Get again: <strong>both</strong> communities are now configured. That is not what we wanted. Replace instead:</p>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure --encoding json_ietf \
+  set --replace-path /system/snmp --replace-file gnmi/leaf1-snmp.cfg</code></pre></div>
+        <div class="out"><div class="out-label">You should see</div><pre>"operation": <span class="hl">"REPLACE"</span>,
+"path": "system/snmp"</pre></div>
+        <p>A final Get shows only <code>denog-snmpv2-community</code>.</p>
+        <p>Some platforms lack YANG coverage for a feature. For those, gNMI can carry raw CLI lines too:</p>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure \
+  set --update-cli-file gnmi/leaf1-cli.cfg</code></pre></div>
+        <p>Get <code>/system/snmp</code> once more: a third community, <code>cli-snmpv2-community</code>, appears.</p>
+      </article>
+
+      <article class="step" id="s1-6">
+        <header class="step-head"><span class="step-no">1.6</span><h3>Commit confirmed: changes that undo themselves</h3><label class="done"><input type="checkbox" id="done-1-6" data-sec="gnmi"> Done</label></header>
+        <p>For a risky change, ask the switch to roll it back unless you confirm it in time. Set the MTU to 8000 with a five-minute safety net:</p>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure \
+  set --update /interface[name=ethernet-1/10]/mtu:::json:::8000 \
+  --commit-id mtu-8000 --commit-request --rollback-duration 5m</code></pre></div>
+        <p>While the timer runs, the switch refuses any other change, from any interface. A logged-in CLI shows <code>[commit confirmed (rollback in a minute)]</code> in its status bar, and another Set fails:</p>
+        <div class="out fail"><div class="out-label">Expected refusal</div><pre>SetRequest failed: rpc error: code = Aborted desc = Cannot commit transaction (commit confirmed in progress)</pre></div>
+        <p>Let the five minutes run out, then Get the MTU: it is back at 3600. Now repeat with 7500 and confirm in time:</p>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure \
+  set --update /interface[name=ethernet-1/10]/mtu:::json:::7500 \
+  --commit-id mtu-7500 --commit-request --rollback-duration 5m
+
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure \
+  set --commit-id mtu-7500 --commit-confirm</code></pre></div>
+        <p>The MTU stays at 7500. Don't want to wait? <code>--commit-cancel</code> rejects a pending commit immediately.</p>
+      </article>
+
+      <article class="step" id="s1-7">
+        <header class="step-head"><span class="step-no">1.7</span><h3>Delete a value</h3><label class="done"><input type="checkbox" id="done-1-7" data-sec="gnmi"> Done</label></header>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure \
+  set --delete /interface[name=ethernet-1/10]/mtu</code></pre></div>
+        <div class="out"><div class="out-label">You should see</div><pre>"operation": <span class="hl">"DELETE"</span>,
+"path": "interface[name=ethernet-1/10]/mtu"</pre></div>
+        <p>Get the MTU again: it is back at the YANG default, <strong>9232</strong>.</p>
+      </article>
+
+      <article class="step" id="s1-8">
+        <header class="step-head"><span class="step-no">1.8</span><h3>Subscribe: the four ways to stream</h3><label class="done"><input type="checkbox" id="done-1-8" data-sec="gnmi"> Done</label></header>
+        <p><strong>Subscribe</strong> is what powers streaming telemetry. The switch pushes data to you instead of you polling it.</p>
+        <div class="table-wrap"><table class="kv">
+          <thead><tr><th>Mode</th><th>What the switch sends</th><th>Good for</th></tr></thead>
+          <tbody>
+            <tr><td><code>once</code></td><td>the current value, then it stops</td><td>a quick snapshot</td></tr>
+            <tr><td><code>sample</code></td><td>the value every interval</td><td>counters, rates</td></tr>
+            <tr><td><code>on-change</code></td><td>the value whenever it changes</td><td>states: up/down, BGP sessions</td></tr>
+            <tr><td><code>target-defined</code></td><td>whatever the YANG model says per leaf</td><td>the gnmic default</td></tr>
+          </tbody>
+        </table></div>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code><span class="c"># once</span>
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure \
+  sub --path /interface[name=ethernet-1/1]/statistics/out-packets --mode once
+
+<span class="c"># every 5 seconds, until Ctrl+C</span>
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure \
+  sub --path /interface[name=ethernet-1/1]/statistics/out-packets \
+  --mode stream --stream-mode sample --sample-interval 5s</code></pre></div>
+        <div class="out"><div class="out-label">You should see</div><pre>{ … "interface/statistics/out-packets": "2218" … }
+{ <span class="hl">"sync-response": true</span> }
+{ … "interface/statistics/out-packets": "2218" … }   <span class="c">← 5 s later, and so on</span></pre></div>
+        <p><code>sync-response</code> marks the end of the initial snapshot. Everything after it is a change on top of that state.</p>
+      </article>
+
+      <article class="step" id="s1-9">
+        <header class="step-head"><span class="step-no">1.9</span><h3>See on-change react to traffic</h3><label class="done"><input type="checkbox" id="done-1-9" data-sec="gnmi"> Done</label></header>
+        <p>Start an on-change subscription and keep it running:</p>
+        <div class="term"><div class="term-bar"><span class="where">VM shell · window 1</span><button class="copy" type="button">Copy</button></div><pre><code>gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure \
+  sub --path /interface[name=ethernet-1/1]/statistics/out-packets \
+  --mode stream --stream-mode on-change</code></pre></div>
+        <p>Very little arrives, because the counter barely moves. In a second window, make it move:</p>
+        <div class="term"><div class="term-bar"><span class="where">leaf1 CLI · window 2</span><button class="copy" type="button">Copy</button></div><pre><code>ping 192.168.10.3 network-instance default -i 1</code></pre></div>
+        <p>Now an update arrives every second. Stop the ping and the stream goes quiet. Try <code>-i 0.1</code>: updates still come once per second, because telemetry can only be as fresh as the switch updates its own data model.</p>
+      </article>
+
+      <article class="step" id="s1-10">
+        <header class="step-head"><span class="step-no">1.10</span><h3>Watch a link go down</h3><label class="done"><input type="checkbox" id="done-1-10" data-sec="gnmi"> Done</label></header>
+        <p>With no stream mode given, SR Linux picks per leaf. For oper-state that means on-change:</p>
+        <div class="term"><div class="term-bar"><span class="where">VM shell · window 1</span><button class="copy" type="button">Copy</button></div><pre><code>gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure \
+  sub --path /interface[name=ethernet-1/10]/oper-state --mode stream</code></pre></div>
+        <div class="term"><div class="term-bar"><span class="where">VM shell · window 2</span><button class="copy" type="button">Copy</button></div><pre><code>docker exec -it client1 ip link set dev eth1 down
+docker exec -it client1 ip link set dev eth1 up</code></pre></div>
+        <div class="out"><div class="out-label">You should see</div><pre>"interface/oper-state": "up"
+{ "sync-response": true }
+"interface/oper-state": <span class="hl">"down"</span>    <span class="c">← the moment you take eth1 down</span>
+"interface/oper-state": <span class="hl">"up"</span></pre></div>
+        <aside class="watch"><b>On the dashboard</b><p>Port 10 of leaf1 turns red on the front panel and in the topology, and green again when you bring eth1 back.</p></aside>
+        <p>Paths can be wildcards too. <code>/interface[name=ethernet-*]/oper-state</code> streams every Ethernet port, and <code>--path /interface[name=ethernet-1/10]</code> streams the whole subtree, counters included.</p>
+      </article>
+    </section>
+
+    <!-- ===================== 2 OPENCONFIG ===================== -->
+    <section class="section" id="openconfig" data-svc="oc">
+      <div class="section-head">
+        <span class="section-no">Section 2 · gNMI with OpenConfig</span>
+        <h2>Build the fabric with vendor-neutral models<small>OpenConfig where it exists, native models where it doesn't</small></h2>
+        <p class="intro">Same gNMI, different YANG models. You will read the switch through OpenConfig, then configure BGP and an EVPN-VXLAN service with a mix of OpenConfig and SR Linux models. At the end, the two clients can reach each other.</p>
+      </div>
+
+      <article class="step" id="s2-1">
+        <header class="step-head"><span class="step-no">2.1</span><h3>Look at the switch through OpenConfig</h3><label class="done"><input type="checkbox" id="done-2-1" data-sec="oc"> Done</label></header>
+        <p>The SR Linux CLI speaks both model families. <code>enter oc</code> switches to OpenConfig, <code>enter srl</code> switches back; the first line of the prompt tells you where you are, like <code>--{ + oc running }--</code>.</p>
+        <div class="term"><div class="term-bar"><span class="where">leaf1 CLI</span><button class="copy" type="button">Copy</button></div><pre><code>enter oc
+info flat interfaces interface ethernet-1/1</code></pre></div>
+        <div class="out"><div class="out-label">You should see</div><pre>set / interfaces interface ethernet-1/1 config name ethernet-1/1
+set / interfaces interface ethernet-1/1 config description To-Spine
+set / interfaces interface ethernet-1/1 subinterfaces subinterface 0 ipv4 addresses address 192.168.10.2 config prefix-length 31
+<span class="c">…</span></pre></div>
+        <p>Over gNMI, prefix the path with <code>openconfig:</code>:</p>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure --encoding json_ietf \
+  get --path openconfig:/interfaces/interface[name=ethernet-1/1] --type config
+
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure --encoding json_ietf \
+  get --path openconfig:/interfaces/interface[name=ethernet-1/1]/state/counters/out-pkts</code></pre></div>
+      </article>
+
+      <article class="step" id="s2-2">
+        <header class="step-head"><span class="step-no">2.2</span><h3>Configure BGP and EVPN on all three switches</h3><label class="done"><input type="checkbox" id="done-2-2" data-sec="oc"> Done</label></header>
+        <p>OpenConfig has no model for VXLAN tunnels yet, so each Set carries two files: OpenConfig for BGP and policies, SR Linux native for the MAC-VRF and VXLAN parts. First confirm there is no BGP yet:</p>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure --encoding json_ietf \
+  get --path openconfig:/network-instances/network-instance[name=*] --type config</code></pre></div>
+        <p>Then push the configuration. Make sure you completed step 1.4 first: BGP needs the loopbacks.</p>
+        <div class="term"><div class="term-bar"><span class="where">VM shell · in denog18-grpc-workshop</span><button class="copy" type="button">Copy</button></div><pre><code>for sw in leaf1 leaf2 spine; do
+  gnmic -a $sw:57401 -u admin -p NokiaSrl1! --insecure --encoding json_ietf set \
+    --update-path openconfig:/ --update-file configs/oc/$sw-oc.cfg \
+    --update-path srl_nokia:/  --update-file configs/srl/$sw-srl.cfg
+done</code></pre></div>
+        <div class="out"><div class="out-label">You should see, three times</div><pre>"results": [
+  { "operation": "UPDATE", "path": "openconfig:/" },
+  { "operation": "UPDATE", "path": "srl_nokia:/" }
+]</pre></div>
+      </article>
+
+      <article class="step" id="s2-3">
+        <header class="step-head"><span class="step-no">2.3</span><h3>Check BGP and ping across the fabric</h3><label class="done"><input type="checkbox" id="done-2-3" data-sec="oc"> Done</label></header>
+        <p>Give the sessions a few seconds, then check leaf1's EVPN session to leaf2's loopback:</p>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure --encoding json_ietf --depth 1 \
+  get --path /network-instance[name=default]/protocols/bgp/neighbor[peer-address=2.2.2.2]</code></pre></div>
+        <div class="out"><div class="out-label">Look for</div><pre>"session-state": <span class="hl">"established"</span></pre></div>
+        <p>The two clients now share one Layer 2 segment over EVPN-VXLAN:</p>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>docker exec -it client1 ping -c 3 172.16.10.60</code></pre></div>
+        <div class="out"><div class="out-label">You should see</div><pre>3 packets transmitted, <span class="hl">3 received</span>, 0% packet loss</pre></div>
+      </article>
+
+      <article class="step" id="s2-4">
+        <header class="step-head"><span class="step-no">2.4</span><h3>Put some traffic on the fabric</h3><label class="done"><input type="checkbox" id="done-2-4" data-sec="oc"> Done</label></header>
+        <p>Start a steady iperf stream from client3 to client1, about 1 Mbit/s. It keeps running in the background while you work through the next sections.</p>
+        <div class="term"><div class="term-bar"><span class="where">VM shell · in denog18-grpc-workshop</span><button class="copy" type="button">Copy</button></div><pre><code>./traffic.sh start all</code></pre></div>
+        <p class="muted">If Docker asks for permissions, put <code>sudo</code> in front. Stop it later with <code>./traffic.sh stop all</code>.</p>
+        <aside class="watch"><b>On the dashboard</b><p>Links in the topology turn yellow in the direction of the stream and green for the acknowledgements. The BGP and route tiles in each switch row fill in, and leaf1 and leaf2 gain a <code>mac-vrf-1</code> network instance.</p></aside>
+      </article>
+
+      <article class="step" id="s2-5">
+        <header class="step-head"><span class="step-no">2.5</span><h3>Stream OpenConfig counters</h3><label class="done"><input type="checkbox" id="done-2-5" data-sec="oc"> Done</label></header>
+        <p>Subscribe works the same with OpenConfig paths:</p>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure \
+  sub --path openconfig:/interfaces/interface[name=ethernet-1/1]/state/counters/out-pkts \
+  --mode stream --stream-mode on-change</code></pre></div>
+        <p>With traffic running, updates keep arriving. Stop it with <code>Ctrl+C</code>.</p>
+      </article>
+    </section>
+
+    <!-- ===================== 3 gNOI ===================== -->
+    <section class="section" id="gnoi" data-svc="gnoi">
+      <div class="section-head">
+        <span class="section-no">Section 3 · gNOI</span>
+        <h2>Operate the switches over gRPC<small>gRPC Network Operations Interface</small></h2>
+        <p class="intro">gNOI covers the things an operator does to a box rather than configures on it: ping, traceroute, file transfer, health checks, software upgrades, reboots. You'll use the user <code>gnoic1</code>, whose role is allowed to call gNOI and nothing else.</p>
+      </div>
+
+      <article class="step" id="s3-1">
+        <header class="step-head"><span class="step-no">3.1</span><h3>System time</h3><label class="done"><input type="checkbox" id="done-3-1" data-sec="gnoi"> Done</label></header>
+        <p>The simplest gNOI call. If it answers, gNOI works.</p>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>gnoic -a leaf1:57401 -u gnoic1 -p gnoic1 --insecure system time</code></pre></div>
+        <div class="out"><div class="out-label">You should see</div><pre>+-------------+-----------------------------------------+---------------------+
+| Target Name |                  Time                   |      Timestamp      |
++-------------+-----------------------------------------+---------------------+
+| leaf1:57401 | 2026-11-15 12:32:28.587419852 +0000 UTC | 1794745948587419852 |
++-------------+-----------------------------------------+---------------------+</pre></div>
+      </article>
+
+      <article class="step" id="s3-2">
+        <header class="step-head"><span class="step-no">3.2</span><h3>Ping and traceroute from the switch</h3><label class="done"><input type="checkbox" id="done-3-2" data-sec="gnoi"> Done</label></header>
+        <p>Your client asks leaf1 to ping leaf2's loopback. The ping runs on the switch and the results stream back.</p>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>gnoic -a leaf1:57401 -u gnoic1 -p gnoic1 --insecure \
+  system ping --destination 2.2.2.2 --ns default --count 1 --wait 1s
+
+gnoic -a leaf1:57401 -u gnoic1 -p gnoic1 --insecure \
+  system traceroute --destination 2.2.2.2 --ns default --wait 1s</code></pre></div>
+        <div class="out"><div class="out-label">You should see</div><pre>1 packets sent, 1 packets received, 0.00% packet loss
+
+traceroute to 2.2.2.2 (2.2.2.2), 30 max hops, 56 byte packets
+1 <span class="hl">192.168.10.3</span> (192.168.10.3) 1.58ms     <span class="c">← via spine</span>
+2 2.2.2.2 (2.2.2.2) 1.85ms</pre></div>
+        <p class="muted">Remember this path. In section 5 you'll change it with gRIBI.</p>
+      </article>
+
+      <article class="step" id="s3-3">
+        <header class="step-head"><span class="step-no">3.3</span><h3>Back up the configuration</h3><label class="done"><input type="checkbox" id="done-3-3" data-sec="gnoi"> Done</label></header>
+        <p><strong>File Stat</strong> works like <code>ls</code>, <strong>File Get</strong> like <code>scp</code> from the switch.</p>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>gnoic -a leaf1:57401 -u gnoic1 -p gnoic1 --insecure \
+  file stat --path /etc/opt/srlinux/config.json
+
+gnoic -a leaf1:57401 -u gnoic1 -p gnoic1 --insecure \
+  file get --file /etc/opt/srlinux/config.json --dst .
+
+ls -l etc/opt/srlinux/config.json</code></pre></div>
+        <div class="out"><div class="out-label">You should see</div><pre>| leaf1:57401 | /etc/opt/srlinux/config.json | 2026-11-15T11:11:19Z | -rw-rw-r-- | -----w--w- | 126809 |
+
+INFO[0000] "leaf1:57401" received 64000 bytes
+INFO[0000] "leaf1:57401" file "/etc/opt/srlinux/config.json" <span class="hl">saved</span></pre></div>
+        <p>Put that Get in a cron job and you have daily backups without SSH or SCP.</p>
+      </article>
+
+      <article class="step" id="s3-4">
+        <header class="step-head"><span class="step-no">3.4</span><h3>Send a file to the switch</h3><label class="done"><input type="checkbox" id="done-3-4" data-sec="gnoi"> Done</label></header>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>echo "config ospf bgp" &gt; my-config.bkp
+
+gnoic -a leaf1:57401 -u gnoic1 -p gnoic1 --insecure \
+  file put --file my-config.bkp --dst /var/log/srlinux/my-config.bkp
+
+gnoic -a leaf1:57401 -u gnoic1 -p gnoic1 --insecure \
+  file stat --path /var/log/srlinux/my-config.bkp</code></pre></div>
+        <div class="out"><div class="out-label">You should see</div><pre>INFO[0000] "leaf1:57401" file "my-config.bkp" <span class="hl">written successfully</span>
+
+| leaf1:57401 | /var/log/srlinux/my-config.bkp | 2026-11-15T12:34:40Z | -rwxrwxrwx | -----w--w- | 16 |</pre></div>
+      </article>
+
+      <article class="step" id="s3-5">
+        <header class="step-head"><span class="step-no">3.5</span><h3>Health check</h3><label class="done"><input type="checkbox" id="done-3-5" data-sec="gnoi"> Done</label></header>
+        <p><strong>Healthz</strong> reports the health of a hardware component and collects a tech-support file while it is at it. This one needs the admin user.</p>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>gnoic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure \
+  healthz check --path /platform/fan-tray[id=1]</code></pre></div>
+        <div class="out"><div class="out-label">You should see, after a few seconds</div><pre>| leaf1:57401 | 18013268… | platform/fan-tray[id=1] | <span class="hl">STATUS_UNSPECIFIED</span> | 2026-11-15 13:12:53 +0000 UTC | 18013268… | file |</pre></div>
+        <p>A container has no fan tray, so the status is unspecified. On hardware this is a handy pre- and post-upgrade check. The artifact ID lets you fetch the tech-support file with <code>healthz artifact --id &lt;artifact id&gt;</code>.</p>
+        <aside class="watch"><b>On the dashboard</b><p>The <em>gRPC calls</em> panel in the leaf1 row now lists gNOI System Time, Ping, Traceroute, File Stat, Get, Put and Healthz Check, each with its count.</p></aside>
+      </article>
+
+      <details class="more">
+        <summary>Read on: software upgrades with gNOI (theory, not supported in the container)</summary>
+        <div class="prose" style="margin:0 14px 10px">
+          <p>On real hardware, an upgrade is three OS RPCs: <strong>Verify</strong> the running version, <strong>Install</strong> (transfer) the new image, <strong>Activate</strong> it and reboot.</p>
+        </div>
+        <div class="term"><div class="term-bar"><span class="where">VM shell · against hardware</span><button class="copy" type="button">Copy</button></div><pre><code>gnoic -a HW-leaf1:57401 -u admin -p NokiaSrl1! --insecure os verify
+gnoic -a HW-leaf1:57401 -u admin -p NokiaSrl1! --insecure \
+  os install --version srlinux_26.10.1 --pkg ../26.10/srlinux-26.10.1.bin
+gnoic -a HW-leaf1:57401 -u admin -p NokiaSrl1! --insecure os activate --version 26.10.1</code></pre></div>
+        <div class="prose" style="margin:0 14px 14px"><p class="muted">The optional Ansible exercise, which runs gNOI pings from several switches and reports pass or fail, is in <code>gnoi/README.md</code> section 3.7.</p></div>
+      </details>
+    </section>
+
+    <!-- ===================== 4 gNSI ===================== -->
+    <section class="section" id="gnsi" data-svc="gnsi">
+      <div class="section-head">
+        <span class="section-no">Section 4 · gNSI</span>
+        <h2>Control who may call what, and encrypt the session<small>gRPC Network Security Interface</small></h2>
+        <p class="intro">gNSI manages the security of the gRPC services themselves. <strong>Authz</strong> sets which user may call which RPC. <strong>Certz</strong> manages the TLS certificates the gRPC servers present. These calls go to the TLS server on port 57400.</p>
+      </div>
+
+      <article class="step" id="s4-1">
+        <header class="step-head"><span class="step-no">4.1</span><h3>Talk TLS, and see why it fails at first</h3><label class="done"><input type="checkbox" id="done-4-1" data-sec="gnsi"> Done</label></header>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>gnoic -a leaf1 -u gnoic1 -p gnoic1 file stat --path /etc/opt/srlinux/config.json</code></pre></div>
+        <div class="out fail"><div class="out-label">Expected failure</div><pre>rpc error: code = Unavailable desc = connection error: desc = "transport: authentication handshake failed: tls: failed to verify certificate …"</pre></div>
+        <p>The switch's certificate was signed by Containerlab's CA, which your VM doesn't trust. Tell the client to skip verification for now. You'll fix this properly in 4.4.</p>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>gnoic -a leaf1 -u gnoic1 -p gnoic1 --skip-verify file stat --path /etc/opt/srlinux/config.json
+gnoic -a leaf1 -u gnoic1 -p gnoic1 --skip-verify file get --file /etc/opt/srlinux/config.json --dst .
+
+echo "this is a corrupted image file" &gt; corrupt.img
+gnoic -a leaf1 -u gnoic1 -p gnoic1 --skip-verify file put --file corrupt.img --dst /var/log/srlinux/corrupt.img
+gnoic -a leaf1 -u gnoic1 -p gnoic1 --skip-verify file remove --path /var/log/srlinux/corrupt.img</code></pre></div>
+        <p>All four work. So <code>gnoic1</code>, whose job is backups, can also upload whatever it likes to the switch. Time to fix that.</p>
+      </article>
+
+      <article class="step" id="s4-2">
+        <header class="step-head"><span class="step-no">4.2</span><h3>Allow backups, deny uploads with an Authz policy</h3><label class="done"><input type="checkbox" id="done-4-2" data-sec="gnsi"> Done</label></header>
+        <p>An Authz policy names principals (users or roles) and the RPC paths they may or may not call. This one lets <code>gnoic1</code> stat and get files, and denies put:</p>
+<pre class="proto">{
+  "name": "Ext-clients",
+  "allow_rules": [{
+    "name": "backup-access",
+    "source":  { "principals": ["gnoic1", "gnoi-clients"] },
+    "request": { "paths": ["/gnoi.file.File/Get", "/gnoi.file.File/Stat"] }
+  }],
+  "deny_rules": [{
+    "name": "backup-access",
+    "source":  { "principals": ["gnoic1", "gnoi-clients"] },
+    "request": { "paths": ["/gnoi.file.File/Put"] }
+  }]
+}</pre>
+        <p>Install it with <strong>Authz Rotate</strong>. The command carries the same policy as one escaped string:</p>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>gnsic -a leaf1 -u admin -p NokiaSrl1! --skip-verify authz rotate --policy "{\"name\":\"Ext-clients\",\"allow_rules\":[{\"name\":\"backup-access\",\"source\":{\"principals\":[\"gnoic1\",\"gnoi-clients\"]},\"request\":{\"paths\":[\"/gnoi.file.File/Get\",\"/gnoi.file.File/Stat\"]}}],\"deny_rules\":[{\"name\":\"backup-access\",\"source\":{\"principals\":[\"gnoic1\",\"gnoi-clients\"]},\"request\":{\"paths\":[\"/gnoi.file.File/Put\"]}}]}"</code></pre></div>
+        <div class="out"><div class="out-label">You should see</div><pre>INFO[0000] "leaf1:57400": got UploadResponse
+INFO[0001] "leaf1:57400": sending finalize request
+INFO[0001] "leaf1:57400": closing stream</pre></div>
+        <p>Check that the switch has it:</p>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>gnmic -a leaf1 -u admin -p NokiaSrl1! --skip-verify --encoding json_ietf \
+  get --path /system/aaa/authorization/authz-policy</code></pre></div>
+        <div class="note"><b>Still the default policy?</b><p>gnsic is beta software and doesn't always push the policy on the first try. Run the rotate command again.</p></div>
+      </article>
+
+      <article class="step" id="s4-3">
+        <header class="step-head"><span class="step-no">4.3</span><h3>Test the policy, then remove it</h3><label class="done"><input type="checkbox" id="done-4-3" data-sec="gnsi"> Done</label></header>
+        <p>Repeat the stat, get and put from 4.1. Stat and get still work. Put does not:</p>
+        <div class="out fail"><div class="out-label">Expected refusal</div><pre>File Put failed: rpc error: code = <span class="hl">PermissionDenied</span> desc = User 'gnoic1' is not authorized to use rpc '/gnoi.file.File/Put'</pre></div>
+        <aside class="watch"><b>On the dashboard</b><p>In the leaf1 row, <em>Authz policy</em> now reads "Ext-clients", and <em>Rejected calls</em> and <em>Policy denials</em> each count your denied upload in red.</p></aside>
+        <p>Remove the policy before moving on, so the next exercises aren't blocked:</p>
+        <div class="term"><div class="term-bar"><span class="where">leaf1 CLI</span><button class="copy" type="button">Copy</button></div><pre><code>tools system aaa authorization authz-policy remove</code></pre></div>
+      </article>
+
+      <article class="step" id="s4-4">
+        <header class="step-head"><span class="step-no">4.4</span><h3>Give leaf1 a certificate you can trust</h3><label class="done"><input type="checkbox" id="done-4-4" data-sec="gnsi"> Done</label></header>
+        <p>With Certz the switch generates its own key and a signing request. Only the signed certificate travels back, so the private key never leaves the box. The flow:</p>
+        <ol>
+          <li>create a TLS profile on the switch</li>
+          <li>create a CA on your VM</li>
+          <li>check the switch can generate a CSR for your key type</li>
+          <li>rotate: the switch creates the CSR, your client signs it, the switch installs the certificate</li>
+          <li>point the gRPC server at the new profile</li>
+        </ol>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code><span class="c"># 1. a new TLS profile, and the list of profiles</span>
+gnsic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure certz add-profile --id Corp-Sec-A
+gnsic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure certz get-profile-list
+
+<span class="c"># 2. a CA of your own: ca.pem and ca.key (RSA 2048, SHA-256)</span>
+containerlab tools cert ca create
+openssl x509 -in ca.pem -noout -text | head -n13
+
+<span class="c"># 3. can the switch make a matching CSR?</span>
+gnsic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure certz can-gen-csr --cn leaf1 \
+  --csr-suite CSRSUITE_X509_KEY_TYPE_RSA_2048_SIGNATURE_ALGORITHM_SHA_2_256</code></pre></div>
+        <div class="out"><div class="out-label">You should see</div><pre>INFO[0000] leaf1:57401: added profile "Corp-Sec-A"
+
+| leaf1:57401 | Corp-Sec-A        |
+
+| leaf1:57401 | <span class="hl">true</span>             |</pre></div>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code><span class="c"># 4. CSR on the switch, signed by your CA, installed in the profile</span>
+gnsic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure certz rotate \
+  --cn leaf1 --dns leaf1 --san-ip-address "172.20.20.2" \
+  --ca-cert ca.pem --ca-key ca.key \
+  --csr-suite CSRSUITE_X509_KEY_TYPE_RSA_2048_SIGNATURE_ALGORITHM_SHA_2_256 \
+  --id Corp-Sec-A --version 2</code></pre></div>
+        <div class="out"><div class="out-label">You should see (shortened)</div><pre>INFO[0000] leaf1:57401: can generate CSR
+INFO[0000] leaf1:57401: returned CSR:
+    Subject: CN=leaf1
+    …
+INFO[0000] leaf1:57401: upload response: certificates:{}
+INFO[0000] leaf1:57401: <span class="hl">sending finalize request</span></pre></div>
+        <div class="note"><b>Certz says "Unauthenticated"?</b><p>If your gnsic build refuses the insecure port, send the same commands to the TLS server instead: replace <code>-a leaf1:57401 … --insecure</code> with <code>-a leaf1 … --skip-verify</code>.</p></div>
+      </article>
+
+      <article class="step" id="s4-5">
+        <header class="step-head"><span class="step-no">4.5</span><h3>Switch the gRPC server over and connect securely</h3><label class="done"><input type="checkbox" id="done-4-5" data-sec="gnsi"> Done</label></header>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code><span class="c"># the profile now holds your certificate</span>
+gnmic -a leaf1 -u admin -p NokiaSrl1! --skip-verify --encoding json_ietf \
+  get --path /system/tls/profile[name=Corp-Sec-A]
+
+<span class="c"># 5. the secure server uses it from now on</span>
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure \
+  set --update-path /system/grpc-server[name=mgmt]/tls-profile --update-value Corp-Sec-A</code></pre></div>
+        <p>Now the real test. No <code>--insecure</code>, no <code>--skip-verify</code>: your client checks the switch's certificate against your CA. Because the certificate lists both the name and the management IP, both work.</p>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>gnmic -a leaf1       -u admin -p NokiaSrl1! --tls-ca ca.pem --encoding json_ietf \
+  get --path /interface[name=mgmt0]/statistics
+gnmic -a 172.20.20.2 -u admin -p NokiaSrl1! --tls-ca ca.pem --encoding json_ietf \
+  get --path /interface[name=mgmt0]/statistics</code></pre></div>
+        <div class="out"><div class="out-label">You should see</div><pre>"Path": "srl_nokia-interfaces:interface[name=mgmt0]/statistics",
+"values": { … "in-packets": "6762", … }</pre></div>
+        <aside class="watch"><b>On the dashboard</b><p>The <em>gRPC certificate</em> tile for leaf1 changes from "mgmt: clab-profile, in 12 months" to "mgmt: Corp-Sec-A, in 10 years". The telemetry keeps flowing through the change.</p></aside>
+      </article>
+    </section>
+
+    <!-- ===================== 5 gRIBI ===================== -->
+    <section class="section" id="gribi" data-svc="gribi">
+      <div class="section-head">
+        <span class="section-no">Section 5 · gRIBI</span>
+        <h2>Steer traffic by programming the RIB<small>gRPC Routing Information Base Interface</small></h2>
+        <p class="intro">gRIBI lets a controller install routes as if a routing protocol had learned them: next hops, next-hop groups and prefixes, acknowledged once they are in the RIB and the FIB. You'll move leaf1's traffic to leaf2 off the spine and onto a direct link that no routing protocol knows about.</p>
+      </div>
+
+      <figure class="figure">
+        <svg class="topo" viewBox="0 0 640 290" role="img" aria-labelledby="gribi-title">
+          <title id="gribi-title">gRIBI lab: leaf1 reaches 2.2.2.2 via spine until a gRIBI route sends it over the direct link</title>
+          <line class="link" x1="290" y1="78" x2="140" y2="190"/>
+          <line class="link" x1="350" y1="78" x2="500" y2="190"/>
+          <line class="link direct" x1="210" y1="216" x2="430" y2="216"/>
+          <path class="path-before" d="M168 186 L304 86 L336 86 L472 186"/>
+          <path class="path-after" d="M215 232 L425 232"/>
+          <g class="node"><rect x="250" y="28" width="140" height="50"/><text class="name" x="320" y="51" text-anchor="middle">spine</text><text class="sub" x="320" y="68" text-anchor="middle">3.3.3.3</text></g>
+          <g class="node"><rect x="70" y="190" width="140" height="52"/><text class="name" x="140" y="213" text-anchor="middle">leaf1</text><text class="sub" x="140" y="231" text-anchor="middle">1.1.1.1 · IXR-X3b</text></g>
+          <g class="node"><rect x="430" y="190" width="140" height="52"/><text class="name" x="500" y="213" text-anchor="middle">leaf2</text><text class="sub" x="500" y="231" text-anchor="middle">2.2.2.2</text></g>
+          <text class="ifl" x="216" y="208">e1-5</text>
+          <text class="ifl" x="398" y="208">e1-5</text>
+          <text class="ip" x="320" y="208" text-anchor="middle">172.16.10.0/31</text>
+          <text class="net" x="150" y="118" transform="rotate(-37 150 118)">192.168.10.2/31</text>
+          <text class="net" x="420" y="100" transform="rotate(37 420 100)">192.168.20.2/31</text>
+          <g transform="translate(70 268)"><path class="path-before" d="M0 0 H34"/><text class="net" x="42" y="4">before: BGP route via spine</text></g>
+          <g transform="translate(330 268)"><path class="path-after" d="M0 0 H34"/><text class="net" x="42" y="4">after: gRIBI route, direct</text></g>
+        </svg>
+        <figcaption>The gRIBI lab: the same switches, no clients, one extra link between the leaves. BGP doesn't advertise that link, so until you act, leaf1 reaches 2.2.2.2 through the spine.</figcaption>
+      </figure>
+
+      <article class="step" id="s5-1">
+        <header class="step-head"><span class="step-no">5.1</span><h3>Swap labs</h3><label class="done"><input type="checkbox" id="done-5-1" data-sec="gribi"> Done</label></header>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>sudo clab save
+sudo clab des -a
+cd ~/denog18-grpc-workshop/gribi
+sudo clab dep -c</code></pre></div>
+        <p>The lab comes up fully configured, telemetry stack included. Wait a few seconds for BGP, then open the <strong>DENOG18 gRIBI</strong> dashboard in Grafana and start a ping stream from leaf1 to leaf2's loopback:</p>
+        <div class="term"><div class="term-bar"><span class="where">VM shell · in gribi</span><button class="copy" type="button">Copy</button></div><pre><code>./traffic.sh start</code></pre></div>
+        <aside class="watch"><b>On the dashboard</b><p><em>Traffic leaving leaf1</em> shows about 1.2 Mbit/s "via spine (e1-1)", and the route table lists <code>2.2.2.2/32</code> on leaf1 as type <code>bgp</code>.</p></aside>
+      </article>
+
+      <article class="step" id="s5-2">
+        <header class="step-head"><span class="step-no">5.2</span><h3>Record the path and the route table</h3><label class="done"><input type="checkbox" id="done-5-2" data-sec="gribi"> Done</label></header>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>gnoic -a leaf1:57401 -u gnoic1 -p gnoic1 --insecure \
+  system traceroute --destination 2.2.2.2 --ns default --wait 1s
+
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure --encoding json_ietf --depth 2 \
+  get --path "/network-instance[name=default]/route-table/ipv4-unicast" \
+  | grep -E "prefix|active|type"
+
+gribic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --ns default --aft ipv4</code></pre></div>
+        <div class="out"><div class="out-label">You should see</div><pre>1 192.168.10.3 (192.168.10.3) 326.60ms
+2 2.2.2.2 (2.2.2.2) 347.01ms
+
+"ipv4-prefix": "2.2.2.2/32",
+"route-type": <span class="hl">"srl_nokia-common:bgp"</span>
+
+INFO[0000] got 1 results
+INFO[0000] "leaf1:57401":          <span class="c">← no gRIBI routes yet</span></pre></div>
+      </article>
+
+      <article class="step" id="s5-3">
+        <header class="step-head"><span class="step-no">5.3</span><h3>Inject the route</h3><label class="done"><input type="checkbox" id="done-5-3" data-sec="gribi"> Done</label></header>
+        <p>The payload in <code>grib-input.yml</code> builds the route bottom-up, and the order matters: a next hop, a next-hop group that uses it, then the prefix that points at the group.</p>
+<pre class="proto">default-network-instance: default
+params:
+  redundancy: single-primary   # only the primary client may change routes
+  persistence: preserve        # routes stay after the client disconnects
+  ack-type: rib-fib            # answer once the route is in RIB and FIB
+operations:
+  - op: add
+    election-id: 1:0
+    nh:  { index: 1, ip-address: 172.16.10.1 }
+  - op: add
+    election-id: 1:0
+    nhg: { id: 1, next-hop: [ { index: 1 } ] }
+  - op: add
+    election-id: 1:0
+    ipv4: { prefix: 2.2.2.2/32, nhg: 1 }</pre>
+        <div class="term"><div class="term-bar"><span class="where">VM shell · in gribi</span><button class="copy" type="button">Copy</button></div><pre><code>gribic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure modify --input-file grib-input.yml</code></pre></div>
+        <div class="out"><div class="out-label">You should see, three times</div><pre>response: result: {
+  id: 1
+  status: <span class="hl">FIB_PROGRAMMED</span>
+}</pre></div>
+        <p class="muted">Programming the FIB can take ten seconds or so.</p>
+      </article>
+
+      <article class="step" id="s5-4">
+        <header class="step-head"><span class="step-no">5.4</span><h3>See what changed</h3><label class="done"><input type="checkbox" id="done-5-4" data-sec="gribi"> Done</label></header>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>gribic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --ns default --aft ipv4
+gribic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --ns default --aft nhg
+gribic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure get --ns default --aft nh
+
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure --encoding json_ietf --depth 2 \
+  get --path "/network-instance[name=default]/route-table/ipv4-unicast" \
+  | grep -E "prefix|active|type"
+
+gnoic -a leaf1:57401 -u gnoic1 -p gnoic1 --insecure \
+  system traceroute --destination 2.2.2.2 --ns default --wait 1s</code></pre></div>
+        <div class="out"><div class="out-label">You should see</div><pre>prefix: "2.2.2.2/32"  rib_status: PROGRAMMED  fib_status: PROGRAMMED
+
+"ipv4-prefix": "2.2.2.2/32",
+"route-type": <span class="hl">"srl_nokia-common:gribi"</span>
+
+traceroute to 2.2.2.2 (2.2.2.2), 30 max hops, 56 byte packets
+1 <span class="hl">2.2.2.2</span> (2.2.2.2) 331.37ms     <span class="c">← one hop: the direct link</span></pre></div>
+        <p>gRIBI routes have preference 6, BGP 170. Lower wins, so the gRIBI route takes over without touching BGP.</p>
+        <aside class="watch"><b>On the dashboard</b><p>The stream jumps from "via spine (e1-1)" to "direct to leaf2 (e1-5)", <em>gRIBI routes</em> shows "leaf1 1", and the route table lists <code>2.2.2.2/32</code> as <code>gribi</code> with preference 6. The replies still return through the spine: leaf2 got no gRIBI route and keeps following BGP.</p></aside>
+      </article>
+
+      <article class="step" id="s5-5">
+        <header class="step-head"><span class="step-no">5.5</span><h3>Flush and restore</h3><label class="done"><input type="checkbox" id="done-5-5" data-sec="gribi"> Done</label></header>
+        <div class="term"><div class="term-bar"><span class="where">VM shell · in gribi</span><button class="copy" type="button">Copy</button></div><pre><code>gribic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure flush --ns default --override
+./traffic.sh stop</code></pre></div>
+        <div class="out"><div class="out-label">You should see</div><pre>INFO[0000] "leaf1:57401": timestamp: 1794745792059403059
+<span class="hl">result: OK</span></pre></div>
+        <p>BGP's route is back in charge, and so is the path through the spine.</p>
+      </article>
+    </section>
+
+    <!-- ===================== BONUS ===================== -->
+    <section class="section" id="bonus" data-svc="bonus">
+      <div class="section-head">
+        <span class="section-no">Bonus challenges</span>
+        <h2>Two tasks to try on your own<small>On the gRIBI lab. The solutions are folded away.</small></h2>
+      </div>
+
+      <article class="step" id="sb-1">
+        <header class="step-head"><span class="step-no">B1</span><h3>A read-only telemetry user</h3><label class="done"><input type="checkbox" id="done-b-1" data-sec="bonus"> Done</label></header>
+        <p>Your monitoring system needs gNMI Get and Subscribe. It has no business changing configuration. Create a user for it on leaf1:</p>
+        <div class="term"><div class="term-bar"><span class="where">leaf1 CLI</span><button class="copy" type="button">Copy</button></div><pre><code>enter candidate private
+set / system aaa authorization role gnmi-clients services [ gnmi ]
+set / system aaa authentication user grclient1 password grclient1 role [ gnmi-clients ]
+set / system configuration role gnmi-clients rule / action write
+commit now</code></pre></div>
+        <p><strong>Your task:</strong> write and install an Authz policy that allows gNMI Get and Subscribe for this user and role, and denies gNMI Set. Test it with:</p>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>gnmic -a leaf1 -u grclient1 -p grclient1 --skip-verify --encoding json_ietf \
+  get --path /interface[name=ethernet-1/10]/mtu
+gnmic -a leaf1 -u grclient1 -p grclient1 --skip-verify \
+  set --update /interface[name=ethernet-1/10]/mtu:::json:::4000
+gnmic -a leaf1 -u grclient1 -p grclient1 --skip-verify \
+  sub --path /interface[name=ethernet-1/1]/statistics/out-packets --mode once</code></pre></div>
+        <details class="more">
+          <summary>Show the solution</summary>
+<pre class="proto" style="margin:0 12px 12px">{
+  "name": "denog18-gnmi",
+  "allow_rules": [{
+    "name": "gnmi-access",
+    "source":  { "principals": ["grclient1", "gnmi-clients"] },
+    "request": { "paths": ["/gnmi.gNMI/Get", "/gnmi.gNMI/Subscribe"] }
+  }],
+  "deny_rules": [{
+    "name": "gnmi-access",
+    "source":  { "principals": ["grclient1", "gnmi-clients"] },
+    "request": { "paths": ["/gnmi.gNMI/Set"] }
+  }]
+}</pre>
+          <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>gnsic -a leaf1 -u admin -p NokiaSrl1! --skip-verify authz rotate --policy "{\"name\":\"denog18-gnmi\",\"allow_rules\":[{\"name\":\"gnmi-access\",\"source\":{\"principals\":[\"grclient1\",\"gnmi-clients\"]},\"request\":{\"paths\":[\"/gnmi.gNMI/Get\",\"/gnmi.gNMI/Subscribe\"]}}],\"deny_rules\":[{\"name\":\"gnmi-access\",\"source\":{\"principals\":[\"grclient1\",\"gnmi-clients\"]},\"request\":{\"paths\":[\"/gnmi.gNMI/Set\"]}}]}"</code></pre></div>
+          <div class="out fail"><div class="out-label">The Set now fails</div><pre>SetRequest failed: rpc error: code = PermissionDenied desc = User 'grclient1' is not authorized to use rpc '/gnmi.gNMI/Set'</pre></div>
+        </details>
+      </article>
+
+      <article class="step" id="sb-2">
+        <header class="step-head"><span class="step-no">B2</span><h3>A default route with gRIBI</h3><label class="done"><input type="checkbox" id="done-b-2" data-sec="bonus"> Done</label></header>
+        <p><strong>Your task:</strong> install a default route on leaf1 whose next hop is the direct link to leaf2. Check the route table first to confirm there is no default route yet.</p>
+        <details class="more">
+          <summary>Show the solution</summary>
+          <div class="prose" style="margin:0 14px 10px"><p>Copy <code>grib-input.yml</code> to <code>default-route.yml</code> and change the prefix in the last operation to <code>0.0.0.0/0</code>. Then:</p></div>
+          <div class="term"><div class="term-bar"><span class="where">VM shell · in gribi</span><button class="copy" type="button">Copy</button></div><pre><code>sed 's#2.2.2.2/32#0.0.0.0/0#' grib-input.yml &gt; default-route.yml
+gribic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure modify --input-file default-route.yml
+gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure --encoding json_ietf --depth 2 \
+  get --path "/network-instance[name=default]/route-table/ipv4-unicast" \
+  | grep -E "prefix|active|type"</code></pre></div>
+          <div class="out"><div class="out-label">You should see</div><pre>"active": true,
+"ipv4-prefix": <span class="hl">"0.0.0.0/0"</span>,
+"route-type": "srl_nokia-common:gribi"</pre></div>
+        </details>
+        <p>Done for the day? <code>sudo clab des -a</code> removes the lab.</p>
+      </article>
+    </section>
+
+    <!-- ===================== REFERENCE ===================== -->
+    <section class="section" id="reference" data-svc="ref">
+      <div class="section-head">
+        <span class="section-no">Keep this open</span>
+        <h2>Cheat sheet</h2>
+      </div>
+
+      <div class="table-wrap"><table class="kv">
+        <thead><tr><th>What</th><th>Address</th><th>Login</th></tr></thead>
+        <tbody>
+          <tr><td>Your VM, SSH</td><td><code><span class="vmid">&lt;id&gt;</span>.denog.dcf.network:2222</code></td><td><code>admin</code> / shown on screen</td></tr>
+          <tr><td>VS Code</td><td><code>https://<span class="vmid">&lt;id&gt;</span>.denog.dcf.network:8443</code></td><td>same password</td></tr>
+          <tr><td>Grafana</td><td><code>http://<span class="vmid">&lt;id&gt;</span>.denog.dcf.network:3000</code></td><td><code>admin</code> / <code>admin</code></td></tr>
+          <tr><td>Switches, SSH and gRPC</td><td><code>leaf1</code>, <code>leaf2</code>, <code>spine</code></td><td><code>admin</code> / <code>NokiaSrl1!</code></td></tr>
+          <tr><td>gNOI-only user</td><td>all switches</td><td><code>gnoic1</code> / <code>gnoic1</code></td></tr>
+        </tbody>
+      </table></div>
+
+      <div class="cards2">
+        <div class="card">
+          <h3>Client flags you'll type all day</h3>
+          <ul>
+            <li><code>-a leaf1:57401 --insecure</code>: plain-text server, no TLS</li>
+            <li><code>-a leaf1 --skip-verify</code>: TLS on 57400, certificate not checked</li>
+            <li><code>--tls-ca ca.pem</code>: TLS, certificate checked against your CA</li>
+            <li><code>--encoding json_ietf</code>: readable JSON with module prefixes</li>
+            <li><code>--type config</code>: configuration instead of state on Get</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Paths</h3>
+          <ul>
+            <li>Keys select list entries: <code>/interface[name=ethernet-1/1]</code></li>
+            <li>Wildcards work in keys: <code>[name=ethernet-*]</code>, <code>[name=*]</code></li>
+            <li>OpenConfig paths start with <code>openconfig:/</code></li>
+            <li>Find any path: <code>pwc xpath</code> in the CLI, or the YANG Browser</li>
+            <li>Limit big answers with <code>--depth</code></li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>When something fails</h3>
+          <ul>
+            <li><strong>connection refused</strong>: check host and port, and that the lab is up (<code>sudo clab inspect --all</code>)</li>
+            <li><strong>tls: failed to verify certificate</strong>: add <code>--skip-verify</code>, or use <code>--tls-ca</code></li>
+            <li><strong>PermissionDenied</strong>: the user's role or an Authz policy forbids the RPC</li>
+            <li><strong>No such file</strong>: run file-based commands from the repository folder</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Further reading</h3>
+          <ul>
+            <li><a href="https://gnmic.openconfig.net/" target="_blank" rel="noopener">gNMIc</a>, <a href="https://gnoic.kmrd.dev/" target="_blank" rel="noopener">gNOIc</a>, <a href="https://github.com/karimra/gnsic" target="_blank" rel="noopener">gNSIc</a>, <a href="https://gribic.kmrd.dev/" target="_blank" rel="noopener">gRIBIc</a></li>
+            <li><a href="https://yangbrowser.nokia.com/srlinux" target="_blank" rel="noopener">Nokia YANG Browser</a> and <a href="https://gnxi.srlinux.dev/" target="_blank" rel="noopener">gNxI Browser</a></li>
+            <li><a href="https://protomap.netdevops.me/" target="_blank" rel="noopener">Protomap</a>: browse the RPCs and messages</li>
+            <li><a href="https://learn.srlinux.dev/" target="_blank" rel="noopener">Learn SR Linux</a> and <a href="https://containerlab.dev/" target="_blank" rel="noopener">Containerlab</a></li>
+            <li><a href="https://github.com/openconfig" target="_blank" rel="noopener">OpenConfig on GitHub</a>, also home of the next services: gNPSI for packet sampling, gSII for state injection</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="note"><b>Run it again at home</b><p>Everything here runs on any recent Linux with Docker and Containerlab, or in your browser with <a href="https://codespaces.new/vista-/denog18-grpc-workshop?quickstart=1" target="_blank" rel="noopener">GitHub Codespaces</a>. The full guides are in the <a href="https://github.com/vista-/denog18-grpc-workshop" target="_blank" rel="noopener">workshop repository</a>.</p></div>
+    </section>
+  </main>
+</div>
+
+<footer class="end"><div>DENOG18 · Mastering gRPC for Network Management, Monitoring and Automation · Essen, 15 November 2026</div></footer>
+
+<script>
+(function () {
+  "use strict";
+  var KEY = "denog18-grpc-workshop";
+  function load() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } }
+  function save(state) { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* storage unavailable */ } }
+  var state = load();
+  state.done = state.done || {};
+
+  /* workshop ID */
+  var input = document.getElementById("vm-id");
+  function applyId(raw) {
+    var id = String(raw || "").replace(/[^A-Za-z0-9-]/g, "");
+    document.querySelectorAll(".vmid").forEach(function (el) { el.textContent = id || "<id>"; });
+    return id;
+  }
+  if (state.id) { input.value = state.id; }
+  applyId(state.id);
+  input.addEventListener("input", function () {
+    state.id = applyId(input.value);
+    save(state);
+  });
+
+  /* copy buttons */
+  document.querySelectorAll(".copy").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var pre = btn.closest(".term").querySelector("pre");
+      var text = pre.innerText.replace(/\n$/, "");
+      function flash(label) {
+        btn.textContent = label; btn.classList.add("copied");
+        setTimeout(function () { btn.textContent = "Copy"; btn.classList.remove("copied"); }, 1400);
+      }
+      function selectIt() {
+        var range = document.createRange(); range.selectNodeContents(pre);
+        var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+        flash("Selected");
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () { flash("Copied"); }, selectIt);
+      } else { selectIt(); }
+    });
+  });
+
+  /* progress */
+  var boxes = Array.prototype.slice.call(document.querySelectorAll(".done input"));
+  function render() {
+    var totals = {};
+    boxes.forEach(function (box) {
+      var sec = box.dataset.sec;
+      totals[sec] = totals[sec] || { done: 0, all: 0 };
+      totals[sec].all += 1;
+      if (box.checked) { totals[sec].done += 1; }
+      box.closest(".step").classList.toggle("is-done", box.checked);
+    });
+    document.querySelectorAll("[data-count]").forEach(function (el) {
+      var t = totals[el.dataset.count];
+      if (!t) { return; }
+      el.textContent = t.done + "/" + t.all;
+      el.classList.toggle("complete", t.done === t.all);
+    });
+  }
+  boxes.forEach(function (box) {
+    box.checked = !!state.done[box.id];
+    box.addEventListener("change", function () {
+      state.done[box.id] = box.checked;
+      save(state);
+      render();
+    });
+  });
+  render();
+
+  /* light/dark switch: follows the system until a choice is made */
+  var root = document.documentElement;
+  var themeButtons = Array.prototype.slice.call(document.querySelectorAll("[data-theme-choice]"));
+  var darkQuery = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+  function effectiveTheme() {
+    var chosen = root.getAttribute("data-theme");
+    if (chosen === "light" || chosen === "dark") { return chosen; }
+    return darkQuery && darkQuery.matches ? "dark" : "light";
+  }
+  function syncThemeButtons() {
+    var current = effectiveTheme();
+    themeButtons.forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.themeChoice === current)); });
+  }
+  themeButtons.forEach(function (b) {
+    b.addEventListener("click", function () {
+      root.setAttribute("data-theme", b.dataset.themeChoice);
+      try { localStorage.setItem("denog18-theme", b.dataset.themeChoice); } catch (e) { /* storage unavailable */ }
+      syncThemeButtons();
+    });
+  });
+  if (darkQuery && darkQuery.addEventListener) { darkQuery.addEventListener("change", syncThemeButtons); }
+  syncThemeButtons();
+
+  /* highlight the current section in the index */
+  var links = {};
+  document.querySelectorAll(".index a").forEach(function (a) { links[a.getAttribute("href").slice(1)] = a; });
+  if ("IntersectionObserver" in window) {
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) { return; }
+        Object.keys(links).forEach(function (k) { links[k].classList.remove("active"); });
+        var a = links[entry.target.id];
+        if (a) { a.classList.add("active"); }
+        document.body.setAttribute("data-section", entry.target.id);
+      });
+    }, { rootMargin: "-20% 0px -70% 0px" });
+    document.querySelectorAll("main > .section").forEach(function (s) { observer.observe(s); });
+  }
+})();
+</script>
+</body>
+</html>
