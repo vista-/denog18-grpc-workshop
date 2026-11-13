@@ -285,8 +285,8 @@
       "id": "Clab-Link1",
       "source": "leaf2",
       "target": "spine",
-      "sourceEndpoint": "ethernet-1/2",
-      "targetEndpoint": "ethernet-1/2",
+      "sourceEndpoint": "e1-2",
+      "targetEndpoint": "e1-2",
       "endpointLabelOffsetEnabled": true,
       "endpointLabelOffset": 40
     },
@@ -294,8 +294,8 @@
       "id": "Clab-Link0",
       "source": "leaf1",
       "target": "spine",
-      "sourceEndpoint": "ethernet-1/1",
-      "targetEndpoint": "ethernet-1/1",
+      "sourceEndpoint": "e1-1",
+      "targetEndpoint": "e1-1",
       "endpointLabelOffsetEnabled": true,
       "endpointLabelOffset": 40
     },
@@ -304,7 +304,7 @@
       "source": "client1",
       "target": "leaf1",
       "sourceEndpoint": "eth1",
-      "targetEndpoint": "ethernet-1/10",
+      "targetEndpoint": "e1-10",
       "endpointLabelOffsetEnabled": true,
       "endpointLabelOffset": 30
     },
@@ -313,7 +313,7 @@
       "source": "client3",
       "target": "leaf2",
       "sourceEndpoint": "eth1",
-      "targetEndpoint": "ethernet-1/10",
+      "targetEndpoint": "e1-10",
       "endpointLabelOffsetEnabled": true,
       "endpointLabelOffset": 30
     }

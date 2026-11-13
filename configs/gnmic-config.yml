@@ -19,6 +19,9 @@ common_srl_subscriptions: &common_srl_subs
     - srl-bridge
     - srl-apps
     - srl-net-instance
+    - srl-grpc
+    - srl-system-info
+    - srl-route-table
 targets:
   leaf1: *common_srl_subs
   leaf2: *common_srl_subs
@@ -40,6 +43,7 @@ subscriptions:
       - /interface[name=ethernet-1/*]/oper-state
       - /interface[name=ethernet-1/*]/statistics
       - /interface[name=ethernet-1/*]/traffic-rate
+      - /interface[name=ethernet-1/*]/mtu
   srl-routes:
     mode: stream
     stream-mode: sample
@@ -71,17 +75,64 @@ subscriptions:
     mode: stream
     stream-mode: sample
     sample-interval: 5s
+  srl-grpc:
+    paths:
+      - /system/grpc-server[name=*]/statistics
+      - /system/aaa/authorization/authz-policy/counters
+    mode: stream
+    stream-mode: sample
+    sample-interval: 5s
+  srl-system-info:
+    paths:
+      - /system/information/version
+      - /system/information/last-booted
+      - /system/configuration/last-change
+      - /system/aaa/authorization/authz-policy/version
+      - /system/aaa/authorization/authz-policy/created-on
+    mode: stream
+    stream-mode: sample
+    sample-interval: 5s
+  srl-route-table:
+    paths:
+      - /network-instance[name=default]/route-table/ipv4-unicast/route
+    mode: stream
+    stream-mode: sample
+    sample-interval: 5s
 
 outputs:
   prom-output:
     type: prometheus
     listen: :9273
+    # Drop a metric soon after the switch stops reporting it, so a withdrawn
+    # route does not linger on the dashboard.
+    expiration: 15s
     event-processors:
+      - system-info
       - trim-prefixes
       - rename-srl-interface
       - oper-state-to-int
 
 processors:
+  # Prometheus only stores numbers: timestamps become epoch seconds, version
+  # strings become a "version" label on a metric with the value 1 and the
+  # active flag of a route becomes 1 or 0.
+  system-info:
+    event-starlark:
+      source: |
+        load("time.star", "time")
+
+        def apply(*events):
+          for e in events:
+            for name, value in e.values.items():
+              if name.endswith(("/last-booted", "/last-change", "/created-on")):
+                e.values[name] = time.parse_time(value).unix
+              elif name.endswith("/version"):
+                e.tags["version"] = value
+                e.values[name] = 1
+              elif name.endswith("/active"):
+                e.values[name] = 1 if value else 0
+          return events
+
   trim-prefixes:
     event-strings:
       value-names:
