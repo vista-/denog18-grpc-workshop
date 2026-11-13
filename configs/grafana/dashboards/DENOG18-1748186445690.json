@@ -264,6 +264,7 @@
             "mode": "fixed",
             "fixedColor": "blue"
           },
+          "displayName": "${__field.labels.rpc}",
           "mappings": [],
           "min": 0,
           "thresholds": {
