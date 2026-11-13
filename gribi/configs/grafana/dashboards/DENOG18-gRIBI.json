@@ -604,7 +604,7 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 6,
+        "h": 11,
         "w": 6,
         "x": 0,
         "y": 23
@@ -642,7 +642,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum by (rpc) (label_replace(system_grpc_server_statistics_rpc_access_accepts{source=\"$Node\"}, \"rpc\", \"$1 $2\", \"rpc_name\", \"/(?:.*\\\\.)?(\\\\w+)/(\\\\w+)\"))",
+          "expr": "sum by (rpc) (label_replace(label_replace(label_replace(system_grpc_server_statistics_rpc_access_accepts{source=\"$Node\"}, \"rpc\", \"$1 $2\", \"rpc_name\", \"/(?:.*\\\\.)?(\\\\w+)/(\\\\w+)\"), \"rpc\", \"gNOI $1 $2\", \"rpc_name\", \"/gnoi\\\\.(?:.*\\\\.)?(\\\\w+)/(\\\\w+)\"), \"rpc\", \"gNSI $1 $2\", \"rpc_name\", \"/gnsi\\\\.(?:.*\\\\.)?(\\\\w+)/(\\\\w+)\"))",
           "legendFormat": "{{rpc}}",
           "range": true,
           "refId": "A"
@@ -656,7 +656,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "Rejected calls: failed logins and calls the user may not make. Policy denials: calls denied by the gNSI Authz policy.",
+      "description": "Rejected calls: calls the switch turned down, such as failed logins and calls the user may not make. Policy denials: calls denied by the gNSI Authz policy.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -733,7 +733,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "Version of the installed gNSI Authz policy.",
+      "description": "Name of the installed gNSI Authz policy. It changes with a gNSI Authz Rotate.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -782,13 +782,79 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "system_aaa_authorization_authz_policy_version{source=\"$Node\"}",
-          "legendFormat": "{{version}}",
-          "range": true,
-          "refId": "A"
+          "expr": "system_aaa_authorization_authz_policy_policy{source=\"$Node\"}",
+          "legendFormat": "{{policy_name}}",
+          "range": false,
+          "refId": "A",
+          "instant": true
         }
       ],
       "title": "Authz policy",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "TLS profile used by the secure gRPC server and when its certificate expires. A gNSI Certz Rotate followed by a profile change shows up here.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "noValue": "-",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          },
+          "unit": "dateTimeFromNow"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 13,
+        "y": 23
+      },
+      "id": 18,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "system_tls_profile_expiration{source=\"$Node\"} * on(source, profile_name) group_right() label_replace(system_grpc_server_tls_profile{source=\"$Node\"}, \"profile_name\", \"$1\", \"tls_profile\", \"(.+)\") * 1000",
+          "legendFormat": "{{grpc_server_name}}: {{profile_name}}",
+          "range": false,
+          "refId": "A",
+          "instant": true
+        }
+      ],
+      "title": "gRPC certificate",
       "type": "stat"
     },
     {
@@ -820,7 +886,7 @@
       "gridPos": {
         "h": 6,
         "w": 3,
-        "x": 13,
+        "x": 17,
         "y": 23
       },
       "id": 14,
@@ -882,10 +948,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 6,
+        "h": 5,
         "w": 3,
-        "x": 16,
-        "y": 23
+        "x": 14,
+        "y": 29
       },
       "id": 15,
       "options": {
@@ -924,7 +990,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "Running SR Linux release.",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -946,8 +1012,8 @@
       },
       "gridPos": {
         "h": 6,
-        "w": 3,
-        "x": 19,
+        "w": 2,
+        "x": 20,
         "y": 23
       },
       "id": 16,
@@ -975,11 +1041,12 @@
           "editorMode": "code",
           "expr": "label_replace(system_information_version{source=\"$Node\"}, \"release\", \"$1\", \"version\", \"(v[0-9.]+).*\")",
           "legendFormat": "{{release}}",
-          "range": true,
-          "refId": "A"
+          "range": false,
+          "refId": "A",
+          "instant": true
         }
       ],
-      "title": "Software",
+      "title": "Release",
       "type": "stat"
     },
     {
@@ -1073,16 +1140,16 @@
       },
       "gridPos": {
         "h": 5,
-        "w": 8,
-        "x": 0,
+        "w": 4,
+        "x": 6,
         "y": 29
       },
       "id": 5,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
-        "justifyMode": "center",
-        "orientation": "auto",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -1091,7 +1158,11 @@
           "values": false
         },
         "textMode": "value_and_name",
-        "wideLayout": true
+        "wideLayout": true,
+        "text": {
+          "titleSize": 14,
+          "valueSize": 20
+        }
       },
       "targets": [
         {
@@ -1169,16 +1240,16 @@
       },
       "gridPos": {
         "h": 5,
-        "w": 6,
-        "x": 8,
+        "w": 4,
+        "x": 10,
         "y": 29
       },
       "id": 6,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
-        "justifyMode": "center",
-        "orientation": "auto",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -1187,7 +1258,11 @@
           "values": false
         },
         "textMode": "value_and_name",
-        "wideLayout": true
+        "wideLayout": true,
+        "text": {
+          "titleSize": 14,
+          "valueSize": 20
+        }
       },
       "targets": [
         {
@@ -1273,8 +1348,8 @@
       },
       "gridPos": {
         "h": 5,
-        "w": 4,
-        "x": 14,
+        "w": 3,
+        "x": 17,
         "y": 29
       },
       "id": 7,
@@ -1306,7 +1381,7 @@
           "refId": "A"
         }
       ],
-      "title": "Network instances",
+      "title": "Net instances",
       "type": "stat"
     },
     {
@@ -1345,8 +1420,8 @@
       },
       "gridPos": {
         "h": 5,
-        "w": 3,
-        "x": 18,
+        "w": 2,
+        "x": 20,
         "y": 29
       },
       "id": 8,
@@ -1414,8 +1489,8 @@
       },
       "gridPos": {
         "h": 5,
-        "w": 3,
-        "x": 21,
+        "w": 2,
+        "x": 22,
         "y": 29
       },
       "id": 9,
