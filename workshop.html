@@ -946,8 +946,8 @@ gnoic -a leaf1:57401 -u gnoic1 -p gnoic1 --insecure \
 
       <article class="step" id="s3-6">
         <header class="step-head"><span class="step-no">3.6</span><h3>Automate the checks with Ansible</h3><label class="done"><input type="checkbox" id="done-3-6" data-sec="gnoi"> Done</label></header>
-        <p>Optional. Pinging the same targets from every switch by hand gets old quickly. Here Ansible loops over the switches and the targets, runs <code>gnoic</code> for each pair and reports pass or fail. gnoic still makes the gNOI call; Ansible only orchestrates. Ansible is already installed on your VM.</p>
-        <p>First the inventory: which switches to check, how to log in, and what to ping. The three targets are leaf2's loopback, leaf2's address on its link to the spine, and an address that doesn't exist.</p>
+        <p>Optional task! Pinging the same targets from every switch by hand gets old quickly. Here is an Ansible automation that does it for you: it loops over the switches and the targets, runs <code>gnoic</code> for each pair, and reports ping successes and failures. <code>gnoic</code> still makes the gNOI call, Ansible only orchestrates running the program. Ansible is already installed on your VM, so you don't need to install it first.</p>
+        <p>First, we need to create an inventory: which switches to check, how to log in, and what to ping. The three targets in this example are leaf2's loopback, leaf2's address on its link to the spine, and an address that doesn't exist in this topology.</p>
         <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>cat &gt; ping-inventory.yml &lt;&lt;'EOF'
 all:
   children:
@@ -968,7 +968,7 @@ all:
           - { ip: "192.168.20.2", vrf: "default" }   # leaf2, link to spine
           - { ip: "10.46.2.42", vrf: "default" }     # does not exist
 EOF</code></pre></div>
-        <p>Then the playbook. It runs <code>gnoic … system ping --format json</code> for every switch and target, reads the received-packet count from the JSON, prints one line per check and fails the play if any check failed.</p>
+        <p>Then the actual Ansible playbook. It runs 4 tasks: Runs <code>gnoic … system ping --format json</code> via the built-in shell module for every switch and target, the results from the output JSON of each <code>gnoic</code> call are recorded, prints one line of output per check, and fails the play if any check failed.</p>
         <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>cat &gt; ping-playbook.yml &lt;&lt;'EOF'
 ---
 - name: gNOI Ping
@@ -983,11 +983,11 @@ EOF</code></pre></div>
         -u {{ gnoi_user }}
         -p {{ gnoi_pass }}
         --insecure
-        <span class="hlgnoi">system ping</span>
+        <span class="hlgnoi">system ping
         --destination {{ item.ip }}
         --ns {{ item.vrf }}
         --count 1
-        --wait 1s
+        --wait 1s</span>
         --format json
       loop: "{{ ping_targets }}"
       loop_control:
@@ -1020,8 +1020,8 @@ EOF</code></pre></div>
           {{ ping_report | selectattr('ok', 'equalto', false) | map(attribute='ip') | list }}
       when: ping_report | selectattr('ok', 'equalto', false) | list | length &gt; 0
 EOF</code></pre></div>
-        <p>Run it:</p>
-        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code><span class="hl">ansible-playbook -i ping-inventory.yml ping-playbook.yml</span></code></pre></div>
+        <p>Once we run it:</p>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>ansible-playbook -i ping-inventory.yml ping-playbook.yml</code></pre></div>
         <div class="out"><div class="out-label">You should see (shortened)</div><pre>TASK [Report ping results] *****
 "msg": "[leaf1] 2.2.2.2 (default) -&gt; <span class="hl">OK</span>"
 "msg": "[spine] 2.2.2.2 (default) -&gt; NOK"
@@ -1037,7 +1037,7 @@ fatal: [spine]: FAILED! =&gt; {"msg": "[spine] one or more ping checks failed: [
 PLAY RECAP *****
 leaf1  : ok=3  changed=0  unreachable=0  <span class="hl">failed=1</span>  skipped=0  rescued=0  ignored=0
 spine  : ok=3  changed=0  unreachable=0  <span class="hl">failed=1</span>  skipped=0  rescued=0  ignored=0</pre></div>
-        <p>The play is meant to fail. Run from a pipeline, this failure is what raises the alarm. Two of the four NOKs are worth a closer look.</p>
+        <p>The play is meant to fail. If we took this Ansible playbook and put it into a CI/CD pipeline, this failure would make it clear our change has broken something. The failed pings help narrow down what is broken.</p>
         <div class="table-wrap"><table class="kv">
           <thead><tr><th>Check</th><th>Result</th><th>Why</th></tr></thead>
           <tbody>
