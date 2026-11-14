@@ -208,7 +208,7 @@ all:
         # Common credentials for all switches in this group
         gnoi_port: 57401
         gnoi_user: admin
-        gnoi_pass: "{{ lookup('env', 'EVENT_PASSWORD') }}"
+        gnoi_pass: "NokiaSrl1!"
 
         # The universal ping list
         ping_targets:
