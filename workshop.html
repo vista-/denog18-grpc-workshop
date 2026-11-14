@@ -32,12 +32,27 @@
   --term-id: #9DBBFF;
 
   /* service colors: a line/fill value and a text-safe value */
-  --c-neutral: #00091B; --c-neutral-ink: #6B6B6B;
-  --c-gnmi: #005AFF;    --c-gnmi-ink: #005AFF;
-  --c-oc: #669CFF;      --c-oc-ink: #0040B8;
-  --c-gnoi: #00BBEE;    --c-gnoi-ink: #007D9F;
-  --c-gnsi: #BB55FF;    --c-gnsi-ink: #863DB8;
-  --c-gribi: #F26B43;   --c-gribi-ink: #C2461F;
+  --c-neutral-light: #00091B; --c-neutral-ink-light: #6B6B6B;
+  --c-gnmi-light: #005AFF;    --c-gnmi-ink-light: #005AFF;
+  --c-oc-light: #669CFF;      --c-oc-ink-light: #0040B8;
+  --c-gnoi-light: #00BBEE;    --c-gnoi-ink-light: #007D9F;
+  --c-gnsi-light: #BB55FF;    --c-gnsi-ink-light: #863DB8;
+  --c-gribi-light: #F26B43;   --c-gribi-ink-light: #C2461F;
+
+  --c-neutral-dark: #F2F2F2; --c-neutral-ink-dark: #A3A3A3;
+  --c-gnmi-dark: #669CFF;    --c-gnmi-ink-dark: #7FA8FF;
+  --c-oc-dark: #669CFF;      --c-oc-ink-dark: #9DBBFF;
+  --c-gnoi-dark: #00BBEE;    --c-gnoi-ink-dark: #66D6F5;
+  --c-gnsi-dark: #BB55FF;    --c-gnsi-ink-dark: #D699FF;
+  --c-gribi-dark: #F26B43;   --c-gribi-ink-dark: #FF9B7A;
+
+  --c-neutral: var(--c-neutral-light); --c-neutral-ink: var(--c-neutral-ink-light);
+  --c-gnmi: var(--c-gnmi-light);       --c-gnmi-ink: var(--c-gnmi-ink-light);
+  --c-oc: var(--c-oc-light);           --c-oc-ink: var(--c-oc-ink-light);
+  --c-gnoi: var(--c-gnoi-light);       --c-gnoi-ink: var(--c-gnoi-ink-light);
+  --c-gnsi: var(--c-gnsi-light);       --c-gnsi-ink: var(--c-gnsi-ink-light);
+  --c-gribi: var(--c-gribi-light);     --c-gribi-ink: var(--c-gribi-ink-light);
+
   --sec: var(--c-neutral); --sec-ink: var(--c-neutral-ink);
 
   /* page tints, one per section */
@@ -62,23 +77,32 @@
     --bg: #0E0F12; --surface: #16181C; --panel: #1E2126; --ink: #F2F2F2; --muted: #A3A3A3; --line: #2C3036;
     --accent: #7FA8FF; --link: #9DBBFF; --bad: #FF7B72;
     --term: #08090B; --term-ink: #F2F2F2; --term-dim: #8C8C8C; --term-line: #24272C; --term-id: #9DBBFF;
-    --c-neutral: #F2F2F2; --c-neutral-ink: #A3A3A3;
-    --c-gnmi: #669CFF; --c-gnmi-ink: #7FA8FF; --c-oc: #669CFF; --c-oc-ink: #9DBBFF;
-    --c-gnoi: #00BBEE; --c-gnoi-ink: #66D6F5; --c-gnsi: #BB55FF; --c-gnsi-ink: #D699FF;
-    --c-gribi: #F26B43; --c-gribi-ink: #FF9B7A;
+
+    --c-neutral: var(--c-neutral-dark); --c-neutral-ink: var(--c-neutral-ink-dark);
+    --c-gnmi: var(--c-gnmi-dark);       --c-gnmi-ink: var(--c-gnmi-ink-dark);
+    --c-oc: var(--c-oc-dark);           --c-oc-ink: var(--c-oc-ink-dark);
+    --c-gnoi: var(--c-gnoi-dark);       --c-gnoi-ink: var(--c-gnoi-ink-dark);
+    --c-gnsi: var(--c-gnsi-dark);       --c-gnsi-ink: var(--c-gnsi-ink-dark);
+    --c-gribi: var(--c-gribi-dark);     --c-gribi-ink: var(--c-gribi-ink-dark);
+
     --tint-basics: #0E0F12; --tint-setup: #121315; --tint-gnmi: #0D1221; --tint-oc: #0F1320; --tint-gnoi: #0B1519;
     --tint-gnsi: #150F1D; --tint-gribi: #1A110E; --tint-bonus: #121315; --tint-reference: #0E0F12;
     color-scheme: dark;
   }
 }
+
 :root[data-theme="dark"] {
   --bg: #0E0F12; --surface: #16181C; --panel: #1E2126; --ink: #F2F2F2; --muted: #A3A3A3; --line: #2C3036;
   --accent: #7FA8FF; --link: #9DBBFF; --bad: #FF7B72;
   --term: #08090B; --term-ink: #F2F2F2; --term-dim: #8C8C8C; --term-line: #24272C; --term-id: #9DBBFF;
-  --c-neutral: #F2F2F2; --c-neutral-ink: #A3A3A3;
-  --c-gnmi: #669CFF; --c-gnmi-ink: #7FA8FF; --c-oc: #669CFF; --c-oc-ink: #9DBBFF;
-  --c-gnoi: #00BBEE; --c-gnoi-ink: #66D6F5; --c-gnsi: #BB55FF; --c-gnsi-ink: #D699FF;
-  --c-gribi: #F26B43; --c-gribi-ink: #FF9B7A;
+
+  --c-neutral: var(--c-neutral-dark); --c-neutral-ink: var(--c-neutral-ink-dark);
+  --c-gnmi: var(--c-gnmi-dark);       --c-gnmi-ink: var(--c-gnmi-ink-dark);
+  --c-oc: var(--c-oc-dark);           --c-oc-ink: var(--c-oc-ink-dark);
+  --c-gnoi: var(--c-gnoi-dark);       --c-gnoi-ink: var(--c-gnoi-ink-dark);
+  --c-gnsi: var(--c-gnsi-dark);       --c-gnsi-ink: var(--c-gnsi-ink-dark);
+  --c-gribi: var(--c-gribi-dark);     --c-gribi-ink: var(--c-gribi-ink-dark);
+
   --tint-basics: #0E0F12; --tint-setup: #121315; --tint-gnmi: #0D1221; --tint-oc: #0F1320; --tint-gnoi: #0B1519;
   --tint-gnsi: #150F1D; --tint-gribi: #1A110E; --tint-bonus: #121315; --tint-reference: #0E0F12;
   color-scheme: dark;
@@ -238,7 +262,22 @@ main { min-width: 0; display: grid; gap: 120px; }
 .step p, .step li { max-width: 46em; }
 .step ul, .step ol { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
 
-.term { background: var(--term); min-width: 0; }
+[data-svc="gnmi"] .term  { --sec-ink: var(--c-gnmi-ink-dark); }
+[data-svc="oc"] .term    { --sec-ink: var(--c-oc-ink-dark); }
+[data-svc="gnoi"] .term  { --sec-ink: var(--c-gnoi-ink-dark); }
+[data-svc="gnsi"] .term  { --sec-ink: var(--c-gnsi-ink-dark); }
+[data-svc="gribi"] .term { --sec-ink: var(--c-gribi-ink-dark); }
+.term {
+  background: var(--term);
+  min-width: 0;
+  --c-neutral-ink: var(--c-neutral-ink-dark);
+  --c-gnmi-ink: var(--c-gnmi-ink-dark);
+  --c-oc-ink: var(--c-oc-ink-dark);
+  --c-gnoi-ink: var(--c-gnoi-ink-dark);
+  --c-gnsi-ink: var(--c-gnsi-ink-dark);
+  --c-gribi-ink: var(--c-gribi-ink-dark);
+  --sec-ink: var(--c-neutral-ink-dark);
+}
 .term .hl { font-weight: 600; color: var(--sec-ink); }
 .term .hlgnmi { font-weight: 600; color: var(--c-gnmi-ink); }
 .term .hlgnoi { font-weight: 600; color: var(--c-gnoi-ink); }
@@ -944,19 +983,19 @@ gnoic -a leaf1 -u gnoic1 -p gnoic1 --skip-verify <span class="hlgnoi">file remov
       <article class="step" id="s4-2">
         <header class="step-head"><span class="step-no">4.2</span><h3>Allow backups, deny uploads with an Authz policy</h3><label class="done"><input type="checkbox" id="done-4-2" data-sec="gnsi"> Done</label></header>
         <p>An Authz policy names principals (users or roles) and the RPC paths they may or may not call. This one lets <code>gnoic1</code> stat and get files, and denies put:</p>
-<pre class="proto">{
+<div class="out"><div class="out-label">Authz Policy</div><pre>{
   "name": "Ext-clients",
   "allow_rules": [{
     "name": "backup-access",
     "source":  { "principals": ["gnoic1", "gnoi-clients"] },
-    "request": { "paths": ["/gnoi.file.File/Get", "/gnoi.file.File/Stat"] }
+    "request": { "paths": [<span class="hl">"/gnoi.file.File/Get", "/gnoi.file.File/Stat"</span>] }
   }],
   "deny_rules": [{
     "name": "backup-access",
     "source":  { "principals": ["gnoic1", "gnoi-clients"] },
-    "request": { "paths": ["/gnoi.file.File/Put"] }
+    "request": { "paths": [<span class="hl">"/gnoi.file.File/Put"</span>] }
   }]
-}</pre>
+}</pre></div></article>
         <p>Install it with <strong>Authz Rotate</strong>. The command carries the same policy as one escaped string:</p>
         <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>gnsic -a leaf1 -u admin -p NokiaSrl1! --skip-verify <span class="hl">authz rotate --policy "{\"name\":\"Ext-clients\",\"allow_rules\":[{\"name\":\"backup-access\",\"source\":{\"principals\":[\"gnoic1\",\"gnoi-clients\"]},\"request\":{\"paths\":[\"/gnoi.file.File/Get\",\"/gnoi.file.File/Stat\"]}}],\"deny_rules\":[{\"name\":\"backup-access\",\"source\":{\"principals\":[\"gnoic1\",\"gnoi-clients\"]},\"request\":{\"paths\":[\"/gnoi.file.File/Put\"]}}]}"</span></code></pre></div>
         <div class="out"><div class="out-label">You should see</div><pre>INFO[0000] "leaf1:57400": got UploadResponse
@@ -1000,21 +1039,21 @@ gnsic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure <span class="hl">certz ca
   --csr-suite CSRSUITE_X509_KEY_TYPE_RSA_2048_SIGNATURE_ALGORITHM_SHA_2_256</span></code></pre></div>
         <div class="out"><div class="out-label">You should see</div><pre>INFO[0000] leaf1:57401: added profile "Corp-Sec-A"
 
-| leaf1:57401 | Corp-Sec-A        |
+| leaf1:57401 | <span class="hl">Corp-Sec-A</span>        |
 
 Certificate:
     Data:
         Version: 3 (0x2)
         Serial Number: 2019 (0x7e3)
-        Signature Algorithm: <b>sha256WithRSAEncryption</b>
+        Signature Algorithm: <span class="hl">sha256WithRSAEncryption</span>
         Issuer: C = Internet, L = Server, O = Containerlab, OU = Containerlab Tools, CN = containerlab.dev
         Validity
             Not Before: Nov 11 13:27:10 2026 GMT
             Not After : Nov  8 13:27:10 2036 GMT
         Subject: C = Internet, L = Server, O = Containerlab, OU = Containerlab Tools, CN = containerlab.dev
         Subject Public Key Info:
-            Public Key Algorithm: <b>rsaEncryption</b>
-                Public-Key: <b>(2048 bit)</b>
+            Public Key Algorithm: <span class="hl">rsaEncryption</span>
+                Public-Key: <span class="hl">(2048 bit)</span>
 
 | leaf1:57401 | <span class="hl">true</span>             |</pre></div>
         <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code><span class="c"># 4. CSR on the switch, signed by your CA, installed in the profile</span>
@@ -1116,7 +1155,7 @@ INFO[0000] "leaf1:57401":          <span class="c">← no gRIBI routes yet</span
       <article class="step" id="s5-3">
         <header class="step-head"><span class="step-no">5.3</span><h3>Inject the route</h3><label class="done"><input type="checkbox" id="done-5-3" data-sec="gribi"> Done</label></header>
         <p>The payload in <code>grib-input.yml</code> builds the route bottom-up, and the order matters: a next hop, a next-hop group that uses it, then the prefix that points at the group.</p>
-<pre class="proto">default-network-instance: default
+<div class="out"><div class="out-label">grib-input.yml</div><pre>default-network-instance: default
 params:
   redundancy: single-primary   # only the primary client may change routes
   persistence: preserve        # routes stay after the client disconnects
@@ -1124,13 +1163,13 @@ params:
 operations:
   - op: add
     election-id: 1:0
-    nh:  { index: 1, ip-address: 172.16.10.1 }
+    nh:  { index: 1, <span class="hl">ip-address: 172.16.10.1</span> }
   - op: add
     election-id: 1:0
-    nhg: { id: 1, next-hop: [ { index: 1 } ] }
+    nhg: { <span class="hl">id: 1</span>, next-hop: [ { index: 1 } ] }
   - op: add
     election-id: 1:0
-    ipv4: { prefix: 2.2.2.2/32, nhg: 1 }</pre>
+    ipv4: { <span class="hl">prefix: 2.2.2.2/32</span>, nhg: 1 }</pre></div>
         <div class="term"><div class="term-bar"><span class="where">VM shell · in gribi</span><button class="copy" type="button">Copy</button></div><pre><code>gribic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure <span class="hl">modify --input-file grib-input.yml</span></code></pre></div>
         <div class="out"><div class="out-label">You should see, three times</div><pre>response: result: {
   id: 1
