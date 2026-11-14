@@ -662,7 +662,7 @@ gnmic -a spine:57401 -u admin -p NokiaSrl1! --insecure --encoding json_ietf \
         <p>An <em>update</em> merges your data into what is there. A <em>replace</em> deletes everything under the path first, then writes your data, in one commit. Watch the difference with a new SNMP community.</p>
         <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code><span class="c"># 1. what is configured now</span>
 gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure --encoding json_ietf \
-  <span class="hl">>get --path /system/snmp --type config</span>
+  <span class="hl">get --path /system/snmp --type config</span>
 
 <span class="c"># 2. merge the new community in</span>
 gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure --encoding json_ietf \
