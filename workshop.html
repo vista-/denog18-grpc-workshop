@@ -138,8 +138,7 @@ a:hover { text-decoration-thickness: 2px; }
 code, kbd { font-family: var(--font-mono); font-size: 0.86em; }
 :not(pre) > code {
   background: var(--panel); padding: 0.08em 0.35em; overflow-wrap: anywhere;
-  box-decoration-break: clone; -webkit-box-decoration-break: clone;
-}
+  box-decoration-break: clone; -webkit-box-decoration-break: clone; font-variant-ligatures: none; }
 h1, h2, h3 { font-family: var(--font-head); font-weight: 300; text-wrap: balance; margin: 0; }
 p { margin: 0; }
 strong { font-weight: 600; }
@@ -293,7 +292,7 @@ main { min-width: 0; display: grid; gap: 120px; }
 }
 .copy:hover { border-color: var(--term-dim); }
 .copy.copied { color: var(--term); background: var(--term-ink); border-color: var(--term-ink); }
-.term pre, .out pre { margin: 0; padding: 16px; overflow-x: auto; font: 400 13.5px/1.65 var(--font-mono); tab-size: 2; }
+.term pre, .out pre { margin: 0; padding: 16px; overflow-x: auto; font: 400 13.5px/1.65 var(--font-mono); tab-size: 2; font-variant-ligatures: none; }
 .term pre { color: var(--term-ink); }
 .term .c { color: var(--term-dim); }
 .vmid { color: var(--term-id); }
@@ -307,7 +306,7 @@ main { min-width: 0; display: grid; gap: 120px; }
 .out .c { color: var(--muted); }
 details.more { border: 1px solid var(--line); background: var(--surface); }
 details.more > summary { cursor: pointer; padding: 12px 16px; font-size: 15px; }
-details.more > .out, details.more > .term, details.more > div, details.more > .proto { margin: 0 14px 14px; }
+details.more > .out, details.more > .term, details.more > div, details.more > .proto { margin: 0 14px 14px; font-variant-ligatures: none; }
 details.more[open] > summary { border-bottom: 1px solid var(--line); margin-bottom: 14px; }
 
 .note, .watch, .warn { padding: 14px 16px; font-size: 15px; display: grid; gap: 4px; }
@@ -786,7 +785,7 @@ gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure \
         <header class="step-head"><span class="step-no">1.10</span><h3>Watch a link go down</h3><label class="done"><input type="checkbox" id="done-1-10" data-sec="gnmi"> Done</label></header>
         <p>With no stream mode given, SR Linux picks per leaf, based on the YANG data model. For oper-state that means on-change:</p>
         <div class="term"><div class="term-bar"><span class="where">VM shell · window 1</span><button class="copy" type="button">Copy</button></div><pre><code>gnmic -a leaf1:57401 -u admin -p NokiaSrl1! --insecure \
-  <span class="hl">sub --path /interface[name=ethernet-1/10]/oper-state --mode stream</span></code></code></pre></div>
+  <span class="hl">sub --path /interface[name=ethernet-1/10]/oper-state --mode stream</span></code></pre></div>
         <div class="term"><div class="term-bar"><span class="where">VM shell · window 2</span><button class="copy" type="button">Copy</button></div><pre><code>docker exec -it client1 ip link set dev eth1 down
 docker exec -it client1 ip link set dev eth1 up</code></pre></div>
         <div class="out"><div class="out-label">You should see</div><pre>"interface/oper-state": "up"
@@ -945,6 +944,117 @@ gnoic -a leaf1:57401 -u gnoic1 -p gnoic1 --insecure \
         <aside class="watch"><b>On the dashboard</b><p>The <em>gRPC calls</em> panel in the leaf1 row now lists gNOI System Time, Ping, Traceroute, File Stat, Get, Put and Healthz Check, each with its count.</p></aside>
       </article>
 
+      <article class="step" id="s3-6">
+        <header class="step-head"><span class="step-no">3.6</span><h3>Automate the checks with Ansible</h3><label class="done"><input type="checkbox" id="done-3-6" data-sec="gnoi"> Done</label></header>
+        <p>Optional. Pinging the same targets from every switch by hand gets old quickly. Here Ansible loops over the switches and the targets, runs <code>gnoic</code> for each pair and reports pass or fail. gnoic still makes the gNOI call; Ansible only orchestrates. Ansible is already installed on your VM.</p>
+        <p>First the inventory: which switches to check, how to log in, and what to ping. The three targets are leaf2's loopback, leaf2's address on its link to the spine, and an address that doesn't exist.</p>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>cat &gt; ping-inventory.yml &lt;&lt;'EOF'
+all:
+  children:
+    nokia_switches:
+      hosts:
+        leaf1:
+          ansible_host: leaf1
+        spine:
+          ansible_host: spine
+      vars:
+        # gnoic runs on the VM, with the Python that runs Ansible
+        ansible_python_interpreter: "{{ ansible_playbook_python }}"
+        gnoi_port: 57401
+        gnoi_user: admin
+        gnoi_pass: "NokiaSrl1!"
+        ping_targets:
+          - { ip: "2.2.2.2", vrf: "default" }        # leaf2 loopback
+          - { ip: "192.168.20.2", vrf: "default" }   # leaf2, link to spine
+          - { ip: "10.46.2.42", vrf: "default" }     # does not exist
+EOF</code></pre></div>
+        <p>Then the playbook. It runs <code>gnoic … system ping --format json</code> for every switch and target, reads the received-packet count from the JSON, prints one line per check and fails the play if any check failed.</p>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>cat &gt; ping-playbook.yml &lt;&lt;'EOF'
+---
+- name: gNOI Ping
+  hosts: nokia_switches
+  gather_facts: false
+  connection: local
+
+  tasks:
+    - name: Run gNOI ping checks (JSON output)
+      ansible.builtin.shell: &gt;
+        gnoic -a {{ ansible_host }}:{{ gnoi_port }}
+        -u {{ gnoi_user }}
+        -p {{ gnoi_pass }}
+        --insecure
+        <span class="hlgnoi">system ping</span>
+        --destination {{ item.ip }}
+        --ns {{ item.vrf }}
+        --count 1
+        --wait 1s
+        --format json
+      loop: "{{ ping_targets }}"
+      loop_control:
+        label: "{{ item.ip }}"
+      register: raw_ping_results
+      changed_when: false
+      ignore_errors: true
+
+    - name: Evaluate ping results
+      ansible.builtin.set_fact:
+        ping_report: &gt;-
+          {%- set out = [] -%}
+          {%- for r in raw_ping_results.results -%}
+          {%- set counts = (r.stdout | default('')) | regex_findall('"received": *"?([0-9]+)') | map('int') | list -%}
+          {%- set _ = out.append({'ip': r.item.ip, 'vrf': r.item.vrf, 'ok': ((counts + [0]) | max) &gt;= 1}) -%}
+          {%- endfor -%}
+          {{ out }}
+
+    - name: Report ping results
+      ansible.builtin.debug:
+        msg: "[{{ inventory_hostname }}] {{ item.ip }} ({{ item.vrf }}) -&gt; {{ 'OK' if item.ok else 'NOK' }}"
+      loop: "{{ ping_report }}"
+      loop_control:
+        label: "{{ item.ip }}"
+
+    - name: Fail the play if any ping check failed
+      ansible.builtin.fail:
+        msg: &gt;-
+          [{{ inventory_hostname }}] one or more ping checks failed:
+          {{ ping_report | selectattr('ok', 'equalto', false) | map(attribute='ip') | list }}
+      when: ping_report | selectattr('ok', 'equalto', false) | list | length &gt; 0
+EOF</code></pre></div>
+        <p>Run it:</p>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code><span class="hl">ansible-playbook -i ping-inventory.yml ping-playbook.yml</span></code></pre></div>
+        <div class="out"><div class="out-label">You should see (shortened)</div><pre>TASK [Report ping results] *****
+"msg": "[leaf1] 2.2.2.2 (default) -&gt; <span class="hl">OK</span>"
+"msg": "[spine] 2.2.2.2 (default) -&gt; NOK"
+"msg": "[leaf1] 192.168.20.2 (default) -&gt; NOK"
+"msg": "[leaf1] 10.46.2.42 (default) -&gt; NOK"
+"msg": "[spine] 192.168.20.2 (default) -&gt; <span class="hl">OK</span>"
+"msg": "[spine] 10.46.2.42 (default) -&gt; NOK"
+
+TASK [Fail the play if any ping check failed] *****
+fatal: [leaf1]: FAILED! =&gt; {"msg": "[leaf1] one or more ping checks failed: ['192.168.20.2', '10.46.2.42']"}
+fatal: [spine]: FAILED! =&gt; {"msg": "[spine] one or more ping checks failed: ['2.2.2.2', '10.46.2.42']"}
+
+PLAY RECAP *****
+leaf1  : ok=3  changed=0  unreachable=0  <span class="hl">failed=1</span>  skipped=0  rescued=0  ignored=0
+spine  : ok=3  changed=0  unreachable=0  <span class="hl">failed=1</span>  skipped=0  rescued=0  ignored=0</pre></div>
+        <p>The play is meant to fail. Run from a pipeline, this failure is what raises the alarm. Two of the four NOKs are worth a closer look.</p>
+        <div class="table-wrap"><table class="kv">
+          <thead><tr><th>Check</th><th>Result</th><th>Why</th></tr></thead>
+          <tbody>
+            <tr><td>leaf1 → 2.2.2.2</td><td>OK</td><td>BGP carries leaf2's loopback to leaf1.</td></tr>
+            <tr><td>leaf1 → 192.168.20.2</td><td>NOK</td><td>BGP only carries the loopbacks, so leaf1 has no route to the spine–leaf2 link.</td></tr>
+            <tr><td>spine → 2.2.2.2</td><td>NOK</td><td>The spine sends its pings from its own loopback, 3.3.3.3. The spine doesn't advertise that address, so leaf2 can't answer.</td></tr>
+            <tr><td>spine → 192.168.20.2</td><td>OK</td><td>Directly connected.</td></tr>
+            <tr><td>both → 10.46.2.42</td><td>NOK</td><td>The address doesn't exist, on purpose.</td></tr>
+          </tbody>
+        </table></div>
+        <p>Check the spine case yourself: ping from the spine's link address instead of its loopback, and leaf2 answers.</p>
+        <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>gnoic -a spine:57401 -u admin -p NokiaSrl1! --insecure \
+  <span class="hl">system ping --destination 2.2.2.2 --source 192.168.20.3 --ns default --count 1 --wait 1s</span></code></pre></div>
+        <div class="out"><div class="out-label">You should see</div><pre>1 packets sent, <span class="hl">1 packets received</span>, 0.00% packet loss</pre></div>
+        <aside class="watch"><b>On the dashboard</b><p>Each run adds three <em>gNOI System Ping</em> calls to the <em>gRPC calls</em> panel in the leaf1 and spine rows.</p></aside>
+      </article>
+
       <details class="more">
         <summary>Read on: software upgrades with gNOI (theory, not supported in the container)</summary>
         <div class="prose" style="margin:0 14px 10px">
@@ -954,7 +1064,6 @@ gnoic -a leaf1:57401 -u gnoic1 -p gnoic1 --insecure \
 gnoic -a HW-leaf1:57401 -u admin -p NokiaSrl1! --insecure \
   <span class="hl">os install --version srlinux_26.10.1 --pkg ../26.10/srlinux-26.10.1.bin</span>
 gnoic -a HW-leaf1:57401 -u admin -p NokiaSrl1! --insecure <span class="hl">os activate --version 26.10.1</span></code></pre></div>
-        <div class="prose" style="margin:0 14px 14px"><p class="muted">The optional Ansible exercise, which runs gNOI pings from several switches and reports pass or fail, is in <code>gnoi/README.md</code> section 3.7.</p></div>
       </details>
     </section>
 
