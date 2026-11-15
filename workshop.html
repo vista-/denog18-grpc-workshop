@@ -1104,7 +1104,7 @@ gnoic -a leaf1 -u gnoic1 -p gnoic1 --skip-verify <span class="hlgnoi">file remov
     "source":  { "principals": ["gnoic1", "gnoi-clients"] },
     "request": { "paths": [<span class="hl">"/gnoi.file.File/Put"</span>] }
   }]
-}</pre></div></article>
+}</pre></div>
         <p>Install it with <strong>Authz Rotate</strong>. The command carries the same policy as one escaped string:</p>
         <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>gnsic -a leaf1 -u admin -p NokiaSrl1! --skip-verify <span class="hl">authz rotate --policy "{\"name\":\"Ext-clients\",\"allow_rules\":[{\"name\":\"backup-access\",\"source\":{\"principals\":[\"gnoic1\",\"gnoi-clients\"]},\"request\":{\"paths\":[\"/gnoi.file.File/Get\",\"/gnoi.file.File/Stat\"]}}],\"deny_rules\":[{\"name\":\"backup-access\",\"source\":{\"principals\":[\"gnoic1\",\"gnoi-clients\"]},\"request\":{\"paths\":[\"/gnoi.file.File/Put\"]}}]}"</span></code></pre></div>
         <div class="out"><div class="out-label">You should see</div><pre>INFO[0000] "leaf1:57400": got UploadResponse
