@@ -1357,7 +1357,7 @@ gnmic -a leaf1 -u grclient1 -p grclient1 --skip-verify \
     "request": { "paths": ["/gnmi.gNMI/Set"] }
   }]
 }</pre>
-          <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>gnsic -a leaf1 -u admin -p NokiaSrl1! --skip-verify <span class="hlgnsi">rotate --policy "{\"name\":\"denog18-gnmi\",\"allow_rules\":[{\"name\":\"gnmi-access\",\"source\":{\"principals\":[\"grclient1\",\"gnmi-clients\"]},\"request\":{\"paths\":[\"/gnmi.gNMI/Get\",\"/gnmi.gNMI/Subscribe\"]}}],\"deny_rules\":[{\"name\":\"gnmi-access\",\"source\":{\"principals\":[\"grclient1\",\"gnmi-clients\"]},\"request\":{\"paths\":[\"/gnmi.gNMI/Set\"]}}]}"</span></code></pre></div>
+          <div class="term"><div class="term-bar"><span class="where">VM shell</span><button class="copy" type="button">Copy</button></div><pre><code>gnsic -a leaf1 -u admin -p NokiaSrl1! --skip-verify <span class="hlgnsi">authz rotate --policy "{\"name\":\"denog18-gnmi\",\"allow_rules\":[{\"name\":\"gnmi-access\",\"source\":{\"principals\":[\"grclient1\",\"gnmi-clients\"]},\"request\":{\"paths\":[\"/gnmi.gNMI/Get\",\"/gnmi.gNMI/Subscribe\"]}}],\"deny_rules\":[{\"name\":\"gnmi-access\",\"source\":{\"principals\":[\"grclient1\",\"gnmi-clients\"]},\"request\":{\"paths\":[\"/gnmi.gNMI/Set\"]}}]}"</span></code></pre></div>
           <div class="out fail"><div class="out-label">The Set now fails</div><pre>SetRequest failed: rpc error: code = PermissionDenied desc = User 'grclient1' is not authorized to use rpc '/gnmi.gNMI/Set'</pre></div>
         </details>
       </article>
